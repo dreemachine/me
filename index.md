@@ -3,6 +3,6 @@ layout: default
 title: Home
 ---
 
-# Your Name
+# dree
 
-Philosophy student and photographer.
+Philosophy student at UC Berkeley and amateur photographer.

@@ -3,7 +3,7 @@ layout: default
 title: Photography
 ---
 
-[Portraits](#portraits) | [Landscapes](#landscapes) | [Events](#events)
+[SOMY](#portraits) | [Landscapes](#landscapes) | [Events](#events)
 
 ## Shade of My Heart {#portraits}
 ![coming](assets/images/_DSC5594.JPG)

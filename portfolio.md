@@ -36,7 +36,7 @@ title: Photography
   </figure>
   <figure>
     <img src="/assets/images/bannedbooksDSC5708.JPG" alt="Banned Books Pegasus">
-    <figcaption>banned books at begasus</figcaption>
+    <figcaption>banned books at pegasus</figcaption>
   </figure>
 </div>
 

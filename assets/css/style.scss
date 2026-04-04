@@ -35,3 +35,10 @@ img {
 .image-grid img {
   width: calc(50% - 10px);
 }
+
+figcaption {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}

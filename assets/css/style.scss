@@ -32,21 +32,24 @@ img {
   gap: 20px;
 }
 
+figcaption {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 0;
+  font-weight: bold;
+}
+
 .image-grid figure {
   width: calc(50% - 10px);
   margin: 0;
+  padding: 0;
 }
 
 .image-grid img {
   width: 100%;
+  margin-bottom: 5px;
 }
 
-figcaption {
-  font-size: 0.85em;
-  color: #666;
-  margin-top: 2px;
-  font-style: bold;
-}
 
 h2 {
   margin-top: 60px;

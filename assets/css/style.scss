@@ -3,6 +3,19 @@
 
 @import "{{ site.theme }}";
 
+/* Even distribution for portfolio category links */
+section > p:first-of-type {
+  display: flex;
+  justify-content: space-between;
+  max-width: 600px;
+  margin: 0 auto 30px;
+}
+
+section > p:first-of-type a {
+  flex: 1;
+  text-align: center;
+}
+
 /* Fix layout to prevent overlap */
 .wrapper {
   width: 90%;

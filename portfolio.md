@@ -3,15 +3,15 @@ layout: default
 title: Photography
 ---
 
-[SOMY](#portraits) | [Landscapes](#landscapes) | [Events](#events)
+[SOMY](#pheart) | [Berkeley | The City](#berkeley) | [UC Berkeley](#ucberkeley)
 
-## Shade of My Heart {#portraits}
+## Shade of My Heart {#heart}
 ![coming](/assets/images/comingDSC5594.JPG)
 ![together](/assets/images/togetherDSC5595.JPG)
-![going](/assets/images/goingDSC5641.jpg)
+![going](/assets/images/goingDSC5743.JPG)
 
-## Landscapes {#landscapes}
+## Berkeley | The City {#berkeley}
 ![Landscape 1](/assets/images/landscape1.jpg)
 
-## Events {#events}
+## UC Berkeley {#ucberkeley}
 ![Event 1](/assets/images/event1.jpg)

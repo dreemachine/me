@@ -6,7 +6,7 @@ title: Photography
 [SOMY](#portraits) | [Landscapes](#landscapes) | [Events](#events)
 
 ## Shade of My Heart {#portraits}
-![coming](/assets/images/_DSC5594.JPG)
+![coming](/assets/images/DSC5594.JPG)
 ![together](/assets/images/_DSC5595.JPG)
 ![going](/assets/images/_DSC5641.jpg)
 

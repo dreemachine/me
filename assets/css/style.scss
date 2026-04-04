@@ -3,13 +3,22 @@
 
 @import "{{ site.theme }}";
 
+/* Widen content area */
+.wrapper {
+  width: 90%;
+  max-width: 1200px;
+}
+
+section {
+  width: 100%;
+}
+
 img {
   max-width: 100%;
   height: auto;
   margin-bottom: 20px;
 }
 
-/* Two column image grid */
 .image-grid {
   display: flex;
   flex-wrap: wrap;

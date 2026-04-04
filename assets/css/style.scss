@@ -8,3 +8,14 @@ img {
   height: auto;
   margin-bottom: 20px;
 }
+
+/* Two column image grid */
+.image-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.image-grid img {
+  width: calc(50% - 10px);
+}

@@ -3,14 +3,21 @@
 
 @import "{{ site.theme }}";
 
-/* Widen content area */
+/* Fix layout to prevent overlap */
 .wrapper {
   width: 90%;
-  max-width: 1000px;
+  max-width: 1200px;
+}
+
+header {
+  width: 250px;
+  float: left;
+  position: fixed;
 }
 
 section {
-  width: 100%;
+  width: calc(100% - 300px);
+  float: right;
 }
 
 img {

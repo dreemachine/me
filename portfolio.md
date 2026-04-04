@@ -11,7 +11,7 @@ title: Photography
 ![coming](/assets/images/comingDSC5594.JPG)
 ![together](/assets/images/togetherDSC5595.JPG)
 ![going](/assets/images/goingDSC5743.JPG)
-
+</div>
 
 ## Berkeley The City {#berkeley}
 ![Friendly Strangers](/assets/images/strangers1DSC5659.JPG)

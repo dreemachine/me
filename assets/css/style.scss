@@ -39,12 +39,6 @@ img {
   margin-bottom: 20px;
 }
 
-.image-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
 figcaption {
   font-size: 0.85em;
   color: #666;
@@ -52,15 +46,20 @@ figcaption {
   font-weight: bold;
 }
 
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  grid-auto-flow: dense;
+}
+
 .image-grid figure {
-  width: calc(50% - 10px);
   margin: 0;
-  padding: 0;
 }
 
 .image-grid img {
   width: 100%;
-  margin-bottom: 5px;
+  height: auto;
 }
 
 

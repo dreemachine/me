@@ -5,6 +5,7 @@ title: Writing
 
 ## Philosophy Papers
 
+
 **[Paper 1](/assets/papers/yourpaper.pdf)**  
 Brief description of the paper's argument. What question it addresses or thesis it defends.
 

@@ -1,6 +1,5 @@
 ---
 ---
-
 @import "{{ site.theme }}";
 
 /* Even distribution for portfolio category links */
@@ -51,6 +50,7 @@ figcaption {
   grid-template-columns: repeat(2, 1fr);
   gap: 20px;
   grid-auto-flow: dense;
+  margin-bottom: 40px;
 }
 
 .image-grid figure {
@@ -62,12 +62,7 @@ figcaption {
   height: auto;
 }
 
-
 h2 {
   margin-top: 60px;
   clear: both;
-}
-
-.image-grid {
-  margin-bottom: 40px;
 }

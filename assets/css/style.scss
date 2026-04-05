@@ -46,20 +46,21 @@ figcaption {
 }
 
 .image-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-  grid-auto-flow: dense;
-  margin-bottom: 40px;
+  column-count: 2;
+  column-gap: 20px;
 }
 
 .image-grid figure {
-  margin: 0;
+  margin: 0 0 20px 0;
+  break-inside: avoid;
+  display: inline-block;
+  width: 100%;
 }
 
 .image-grid img {
   width: 100%;
   height: auto;
+  display: block;
 }
 
 h2 {

@@ -3,11 +3,11 @@ layout: default
 title: Coursework
 ---
 
-## Graduate Seminars
+## Graduate Seminars  
 
-**Feminist Epistemology** - Novakovic, Spring 2026
+**Feminist Epistemology** - Novakovic, Spring 2026  
 
-**Graduate Seminar: Normativity and Its Relation to Reasons** - Ginsborg, Fall 2025 (audited)
+**Graduate Seminar: Normativity and Its Relation to Reasons** - Ginsborg, Fall 2025 (audited)  
 
 ## Advanced Undergraduate Courses
 

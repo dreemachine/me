@@ -2,7 +2,8 @@
 layout: default
 title: Photography
 ---
-<p class="portfolio-nav">
+
+<p class="portfolio-nav" markdown="1">
 [SOMY](#heart) | [Berkeley The City](#berkeley) | [UC Berkeley](#ucberkeley)
 </p>
 

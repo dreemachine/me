@@ -3,14 +3,14 @@
 @import "{{ site.theme }}";
 
 /* Even distribution for portfolio category links */
-section > p:first-of-type {
+.portfolio-nav {
   display: flex;
   justify-content: space-between;
   max-width: 600px;
   margin: 0 auto 30px;
 }
 
-section > p:first-of-type a {
+.portfolio-nav a {
   flex: 1;
   text-align: center;
 }

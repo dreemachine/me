@@ -2,7 +2,9 @@
 layout: default
 title: Photography
 ---
+<p class="portfolio-nav">
 [SOMY](#heart) | [Berkeley The City](#berkeley) | [UC Berkeley](#ucberkeley)
+</p>
 
 ## Shade of My Heart {#heart}
 <div class="image-grid">

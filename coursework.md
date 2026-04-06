@@ -9,7 +9,7 @@ title: Coursework
 
 **Graduate Seminar: Normativity and Its Relation to Reasons** - Ginsborg, Fall 2025 (audited)  
 
-## Advanced Undergraduate Courses
+## Upper-division Undergraduate Courses
 
 **Philosophy of Physics** - Rubenstein, Spring 2026
 

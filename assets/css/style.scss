@@ -86,6 +86,37 @@ body {
   height: auto !important;
 }
 
+.saudade-tracklist {
+  margin-top: 48px;
+  text-align: center;
+  font-family: Georgia, serif;
+}
+
+.saudade-playlist-link {
+  color: #444444;
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  border-bottom: 1px solid #aaaaaa;
+}
+
+.saudade-playlist-link:hover {
+  color: #111111;
+}
+
+.saudade-tracks {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+.saudade-tracks li {
+  color: #666666;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+
 /* Mobile responsive */
 @media (max-width: 768px) {
   header {

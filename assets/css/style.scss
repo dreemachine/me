@@ -79,13 +79,18 @@ body {
     float: none;
   }
 
-  .saudade-hint {
+ .saudade-hint {
   color: #222222 !important;
-  font-size: 12px;
+  font-size: 14px;
   letter-spacing: 0.12em;
   margin-top: 12px;
   font-family: Georgia, serif;
   text-align: center;
+  font-weight: bold;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  height: auto !important;
 }
   
   section {

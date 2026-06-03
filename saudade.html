@@ -121,7 +121,9 @@ permalink: /saudade/
     mobileScrollSupport: true,
   });
 
+  window.addEventListener('load', () => {
   pageFlip.loadFromHTML(document.querySelectorAll('#book .page'));
+});
 
   pageFlip.on('flip', (e) => {
     document.getElementById('page-num').textContent = `${e.data + 1} / 10`;

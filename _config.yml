@@ -3,4 +3,3 @@ description: Philosophy & Photography
 theme: jekyll-theme-minimal
 include:
   - "assets/images/_*"
-  - roots-map.html

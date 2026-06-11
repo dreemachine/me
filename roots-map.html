@@ -36,9 +36,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   background: white; border: 0.5px solid #d3d1c7; border-radius: 10px;
   padding: 10px 14px; max-height: 50vh; overflow-y: auto;
 }
-.leg-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #5F5E5A; padding: 2px 0; }
+.leg-row {
+  display: flex; align-items: center; gap: 7px; font-size: 11px; color: #5F5E5A;
+  padding: 3px 4px; border-radius: 5px; cursor: pointer; transition: background 0.1s;
+}
+.leg-row:hover { background: #f1efe8; }
+.leg-row.active { background: #eeedfe; color: #3C3489; font-weight: 500; }
 .leg-swatch { width: 22px; height: 3px; border-radius: 2px; flex-shrink: 0; }
-.leg-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
 .leaflet-tooltip.rt {
   background: white; border: 0.5px solid #d3d1c7; border-radius: 6px;
   padding: 5px 10px; font-size: 12px; color: #2C2C2A; line-height: 1.6;
@@ -79,9 +83,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <div id="header">
   <h1>Roots</h1>
-  <p>Caretaker origins — click a name to highlight connections</p>
+  <p>Caretaker origins — click a name or origin to highlight connections</p>
   <p style="font-size:11px;color:#aaa9a5;margin-top:2px;">Where only a country was given, the pin reflects the geographic center.</p>
-  <a href="https://forms.gle/iKVz44AckcfSExUP8" target="_blank" 
+  <a href="https://forms.gle/iKVz44AckcfSExUP8" target="_blank"
      style="font-size:12px;color:#534AB7;text-decoration:none;margin-top:4px;display:inline-block;">
     Update your information →
   </a>
@@ -94,7 +98,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   </div>
   <div id="map-wrap">
     <div id="map"></div>
-    <div id="legend"><div style="font-size:11px;font-weight:500;color:#888780;margin-bottom:6px;">Origin</div><div id="legend-rows"></div></div>
+    <div id="legend">
+      <div style="font-size:11px;font-weight:500;color:#888780;margin-bottom:6px;">Origin</div>
+      <div id="legend-rows"></div>
+    </div>
   </div>
 </div>
 
@@ -156,10 +163,9 @@ const STUDENTS = [
   {"name":"Mitsuki Shizukuishi","city":"Sendai, Japan","lat":38.2682,"lng":140.8694,"caretakers":[{"city":"Sendai, Japan","lat":38.2682,"lng":140.8694,"gen":1},{"city":"Ishinomaki, Japan","lat":38.4333,"lng":141.3,"gen":1}]}
 ];
 
-// Country detection from city string
 function getCountry(city) {
   const c = city.toLowerCase();
-  if (/vietnam|viet/.test(c)) return 'Vietnam';
+  if (/vietnam|viet|bac lieu|mien trung|saigon|ho chi minh/.test(c)) return 'Vietnam';
   if (/china|beijing|shanghai|shandong|hebei|jiangxi|tianjin|shenyang|hangzhou|ningbo|huainan|chaoyang|beilun/.test(c)) return 'China';
   if (/korea|seoul/.test(c)) return 'Korea';
   if (/japan|tokyo|sendai|ishinomaki|osaka|kyoto/.test(c)) return 'Japan';
@@ -168,35 +174,36 @@ function getCountry(city) {
   if (/india|bihar|ahmedabad|sajiyavadar/.test(c)) return 'India';
   if (/mexico|oaxaca|guanajuato|toluca|manuel doblado/.test(c)) return 'Mexico';
   if (/guatemala/.test(c)) return 'Guatemala';
-  if (/puerto rico|añasco|san juan/.test(c)) return 'Puerto Rico';
+  if (/puerto rico|añasco/.test(c)) return 'Puerto Rico';
   if (/nigeria|imo|aba/.test(c)) return 'Nigeria';
   if (/zambia|lusaka/.test(c)) return 'Zambia';
-  if (/mozambique|maputo/.test(c)) return 'Mozambique';
-  if (/armenia|eshmianse|hoctoberianse/.test(c)) return 'Armenia';
+  if (/mozambique|maputo|quelimane/.test(c)) return 'Mozambique';
+  if (/armenia|ejmiatsin|armavir|hoktemberyan/.test(c)) return 'Armenia';
   if (/norway|oslo/.test(c)) return 'Norway';
   if (/germany|munich/.test(c)) return 'Germany';
+  if (/hawaii|honolulu|oahu/.test(c)) return 'Hawaii / USA';
   return 'North America';
 }
 
-// Per-country colors — visually distinct, not grouped by region
 const COUNTRY_COLORS = {
-  'Vietnam':      '#e05c3a',
-  'China':        '#c9395e',
-  'Korea':        '#a855b5',
-  'Japan':        '#7c3aed',
-  'Taiwan':       '#4f6ddb',
-  'Hong Kong':    '#2563b8',
-  'India':        '#0891b2',
-  'Mexico':       '#059669',
-  'Guatemala':    '#65a30d',
-  'Puerto Rico':  '#ca8a04',
-  'Nigeria':      '#d97706',
-  'Zambia':       '#dc4f1a',
-  'Mozambique':   '#be185d',
-  'Armenia':      '#7e22ce',
-  'Norway':       '#1d6fb5',
-  'Germany':      '#374151',
-  'North America':'#9ca3af',
+  'Vietnam':       '#e05c3a',
+  'China':         '#c9395e',
+  'Korea':         '#a855b5',
+  'Japan':         '#7c3aed',
+  'Taiwan':        '#4f6ddb',
+  'Hong Kong':     '#2563b8',
+  'India':         '#0891b2',
+  'Mexico':        '#059669',
+  'Guatemala':     '#65a30d',
+  'Puerto Rico':   '#ca8a04',
+  'Nigeria':       '#d97706',
+  'Zambia':        '#dc4f1a',
+  'Mozambique':    '#be185d',
+  'Armenia':       '#7e22ce',
+  'Norway':        '#1d6fb5',
+  'Germany':       '#374151',
+  'Hawaii / USA':  '#0d9488',
+  'North America': '#9ca3af',
 };
 
 const DIM_OPACITY    = 0.08;
@@ -225,15 +232,7 @@ function initMap() {
 
   function setMarkerActive(marker, active, color) {
     if (!marker) return;
-    const el = marker.getElement();
-    if (!el) return;
-    const dot = el.querySelector('div');
-    const ring = el.querySelector('.pulse-ring');
     if (active) {
-      dot.style.width  = '15px';
-      dot.style.height = '15px';
-      dot.style.outline = `2px solid ${color}`;
-      dot.style.boxShadow = `0 0 0 3px ${color}44`;
       marker.setIcon(L.divIcon({
         html: `<div style="width:15px;height:15px;border-radius:50%;background:${color};border:2px solid white;outline:2px solid ${color};box-shadow:0 0 0 4px ${color}33;cursor:pointer;position:relative;">
           <div class="pulse-ring" style="position:absolute;top:50%;left:50%;width:15px;height:15px;border-radius:50%;background:${color};animation:pulse-ring 1.2s ease-out infinite;"></div>
@@ -248,16 +247,15 @@ function initMap() {
     }
   }
 
-  // Build per-student line + dot layers
-  const studentLayers = {}; // name -> { lines: [], dots: [] }
-  const allLines = [];
+  // Build per-student and per-country line layers
+  const studentLayers = {};
+  const countryLines  = {};
+  const allLines      = [];
 
   STUDENTS.forEach(s => {
-    const layers = { lines: [], dots: [] };
+    const layers = { lines: [] };
     studentLayers[s.name] = layers;
-
     if (s.lat == null || s.lng == null) return;
-
     const drawnLines = new Set();
     s.caretakers.forEach(c => {
       if (!c.lat || !c.lng) return;
@@ -271,6 +269,8 @@ function initMap() {
       }).addTo(map);
       layers.lines.push(line);
       allLines.push(line);
+      if (!countryLines[country]) countryLines[country] = [];
+      countryLines[country].push(line);
     });
   });
 
@@ -314,10 +314,21 @@ function initMap() {
   ];
   if (allBounds.length) map.fitBounds(allBounds, { padding: [40, 40] });
 
-  // Sidebar
+  // Shared state
   let activeStudent = null;
-  const list = document.getElementById('student-list');
+  let activeCountry = null;
 
+  function clearAll() {
+    activeStudent = null;
+    activeCountry = null;
+    document.querySelectorAll('.s-item').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.leg-row').forEach(e => e.classList.remove('active'));
+    allLines.forEach(l => l.setStyle({ opacity: DIM_OPACITY, weight: 2 }));
+    Object.values(studentMarkers).forEach(m => setMarkerActive(m, false, S_COLOR));
+  }
+
+  // Sidebar
+  const list = document.getElementById('student-list');
   STUDENTS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
     const el = document.createElement('div');
     el.className = 's-item';
@@ -326,19 +337,11 @@ function initMap() {
     el.addEventListener('click', () => {
       const marker = studentMarkers[s.name];
       if (activeStudent === s.name) {
-        activeStudent = null;
-        el.classList.remove('active');
-        allLines.forEach(l => l.setStyle({ opacity: DIM_OPACITY, weight: 2 }));
-        setMarkerActive(marker, false, S_COLOR);
+        clearAll();
       } else {
-        // deactivate previous
-        if (activeStudent && studentMarkers[activeStudent]) {
-          setMarkerActive(studentMarkers[activeStudent], false, S_COLOR);
-        }
-        document.querySelectorAll('.s-item').forEach(e => e.classList.remove('active'));
+        clearAll();
         el.classList.add('active');
         activeStudent = s.name;
-        allLines.forEach(l => l.setStyle({ opacity: DIM_OPACITY, weight: 2 }));
         (studentLayers[s.name]?.lines || []).forEach(l => l.setStyle({ opacity: ACTIVE_OPACITY, weight: 3 }));
         setMarkerActive(marker, true, S_COLOR);
         if (s.lat != null) map.setView([s.lat, s.lng], 3, { animate: true });
@@ -347,12 +350,23 @@ function initMap() {
     list.appendChild(el);
   });
 
-  // Legend
+  // Legend — clickable by country, mutually exclusive with sidebar
   const legendRows = document.getElementById('legend-rows');
   Object.entries(COUNTRY_COLORS).forEach(([country, color]) => {
+    if (!countryLines[country]) return; // skip countries not in data
     const row = document.createElement('div');
     row.className = 'leg-row';
     row.innerHTML = `<div class="leg-swatch" style="background:${color};"></div>${country}`;
+    row.addEventListener('click', () => {
+      if (activeCountry === country) {
+        clearAll();
+      } else {
+        clearAll();
+        activeCountry = country;
+        row.classList.add('active');
+        (countryLines[country] || []).forEach(l => l.setStyle({ opacity: ACTIVE_OPACITY, weight: 3 }));
+      }
+    });
     legendRows.appendChild(row);
   });
 }

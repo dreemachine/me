@@ -9,6 +9,7 @@ permalink: /roots-globe.html
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Roots Globe</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0e0e12; display: flex; flex-direction: column; height: 100vh; overflow: hidden; color: #e8e6e0; }
@@ -16,22 +17,21 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 #header h1 { font-size: 16px; font-weight: 500; color: #e8e6e0; }
 #header p { font-size: 12px; color: #666370; margin-top: 1px; }
 #header a { font-size: 12px; color: #7c6fcd; text-decoration: none; }
-#header a:hover { color: #a89ee0; }
 #body { display: flex; flex: 1; overflow: hidden; }
 #sidebar { width: 220px; flex-shrink: 0; background: #16161c; border-right: 0.5px solid #2a2a35; overflow-y: auto; padding: 10px 0; }
 #sidebar-title { font-size: 10px; font-weight: 600; color: #555260; text-transform: uppercase; letter-spacing: 0.08em; padding: 4px 16px 8px; }
-.s-item { padding: 6px 16px; font-size: 12px; color: #9994a8; cursor: pointer; border-left: 3px solid transparent; transition: background 0.1s; line-height: 1.35; }
+.s-item { padding: 6px 16px; font-size: 12px; color: #9994a8; cursor: pointer; border-left: 3px solid transparent; line-height: 1.35; }
 .s-item:hover { background: #1e1e28; color: #c8c4d8; }
 .s-item.active { background: #1e1e2e; border-left-color: #7c6fcd; color: #c4bbf0; font-weight: 500; }
-#globe-wrap { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
-#globe-wrap svg { cursor: grab; }
-#globe-wrap svg:active { cursor: grabbing; }
-#legend { position: absolute; bottom: 16px; right: 16px; background: #16161c; border: 0.5px solid #2a2a35; border-radius: 10px; padding: 10px 14px; max-height: 50vh; overflow-y: auto; }
-.leg-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #7a7688; padding: 3px 4px; border-radius: 5px; cursor: pointer; transition: background 0.1s; }
+#globe-wrap { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+canvas { position: absolute; top: 0; left: 0; cursor: grab; }
+canvas.dragging { cursor: grabbing; }
+#legend { position: absolute; bottom: 16px; right: 16px; background: #16161c; border: 0.5px solid #2a2a35; border-radius: 10px; padding: 10px 14px; max-height: 50vh; overflow-y: auto; z-index: 10; }
+.leg-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #7a7688; padding: 3px 4px; border-radius: 5px; cursor: pointer; }
 .leg-row:hover { background: #1e1e28; }
 .leg-row.active { background: #1e1e2e; color: #c4bbf0; font-weight: 500; }
 .leg-swatch { width: 20px; height: 3px; border-radius: 2px; flex-shrink: 0; }
-#tooltip { position: absolute; background: #16161c; border: 0.5px solid #2a2a35; border-radius: 6px; padding: 5px 10px; font-size: 12px; color: #c8c4d8; pointer-events: none; display: none; white-space: nowrap; z-index: 10; }
+#tooltip { position: absolute; background: #16161c; border: 0.5px solid #2a2a35; border-radius: 6px; padding: 5px 10px; font-size: 12px; color: #c8c4d8; pointer-events: none; display: none; white-space: nowrap; z-index: 20; }
 #gate { position: fixed; inset: 0; background: #0e0e12; z-index: 9999; display: flex; align-items: center; justify-content: center; }
 #gate-box { background: #16161c; border: 0.5px solid #2a2a35; border-radius: 12px; padding: 32px 36px; width: 300px; text-align: center; }
 </style>
@@ -59,11 +59,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <div id="body">
   <div id="sidebar">
-    <div id="sidebar-title">Music 26</div>
+    <div id="sidebar-title">Music 26 Participants</div>
     <div id="student-list"></div>
   </div>
   <div id="globe-wrap">
-    <svg id="globe"></svg>
+    <canvas id="globe"></canvas>
     <div id="tooltip"></div>
     <div id="legend">
       <div style="font-size:10px;font-weight:600;color:#555260;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em;">Origin</div>
@@ -89,53 +89,53 @@ function checkPassword() {
 }
 
 var STUDENTS = [
-  {name:"Tyson Bui",city:"San Diego, CA",lat:32.7157,lng:-117.1611,caretakers:[{city:"Vietnam",lat:14.0583,lng:108.2772},{city:"Vietnam",lat:14.0583,lng:108.2772}]},
-  {name:"Guadalupe Arellanes Matus",city:"Salinas, CA",lat:36.6777,lng:-121.6555,caretakers:[{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266},{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266}]},
-  {name:"Gagik Aghajanyan",city:"Pasadena, CA",lat:34.1478,lng:-118.1445,caretakers:[{city:"Ejmiatsin, Armenia",lat:40.1672,lng:43.8335},{city:"Armavir, Armenia",lat:40.1544,lng:43.9997}]},
-  {name:"Elena Dolores Tyvoll",city:"San Diego, CA",lat:32.7157,lng:-117.1611,caretakers:[{city:"Oslo, Norway",lat:59.9139,lng:10.7522},{city:"Guanajuato, Mexico",lat:21.019,lng:-101.2574}]},
-  {name:"Hubert Hyunsang Cho",city:"Detroit, MI",lat:42.3314,lng:-83.0458,caretakers:[{city:"Seoul, South Korea",lat:37.5665,lng:126.978},{city:"Seoul, South Korea",lat:37.5665,lng:126.978}]},
-  {name:"Eun-Ju Chang",city:"Los Angeles, CA",lat:34.0522,lng:-118.2437,caretakers:[{city:"Korea",lat:35.9078,lng:127.7669},{city:"Korea",lat:35.9078,lng:127.7669}]},
-  {name:"Sharlena Nhung Nguyen",city:"San Diego, CA",lat:32.7157,lng:-117.1611,caretakers:[{city:"Bac Lieu, Vietnam",lat:9.2941,lng:105.7243},{city:"Bac Lieu, Vietnam",lat:9.2941,lng:105.7243}]},
-  {name:"Cesar Sanchez",city:"Sacramento, CA",lat:38.5816,lng:-121.4944,caretakers:[{city:"Mexico",lat:23.6345,lng:-102.5528},{city:"Mexico",lat:23.6345,lng:-102.5528}]},
-  {name:"Jenny Sun",city:"Beijing, China",lat:39.9042,lng:116.4074,caretakers:[{city:"Shandong, China",lat:36.6683,lng:117.0208},{city:"Hebei, China",lat:38.0428,lng:114.5149}]},
-  {name:"Luke Hayden Hollingsworth",city:"San Jose, CA",lat:37.3382,lng:-121.8863,caretakers:[{city:"Santa Clara, CA",lat:37.3541,lng:-121.9552},{city:"Santa Clara, CA",lat:37.3541,lng:-121.9552}]},
-  {name:"Madison Kurtz",city:"Plano, TX",lat:33.0198,lng:-96.6989,caretakers:[{city:"Dayton, OH",lat:39.7589,lng:-84.1916},{city:"Taipei, Taiwan",lat:25.033,lng:121.5654}]},
-  {name:"Ethan Lee",city:"Los Angeles, CA",lat:34.0522,lng:-118.2437,caretakers:[{city:"Korea",lat:35.9078,lng:127.7669},{city:"Korea",lat:35.9078,lng:127.7669}]},
-  {name:"Clark Huang Wang",city:"Toronto, ON, Canada",lat:43.6532,lng:-79.3832,caretakers:[{city:"Shenyang, China",lat:41.8057,lng:123.4315}]},
-  {name:"Jonathan Tin-Jun Wu",city:"Toronto, Canada",lat:43.6532,lng:-79.3832,caretakers:[{city:"Hong Kong",lat:22.3193,lng:114.1694},{city:"Hong Kong",lat:22.3193,lng:114.1694}]},
-  {name:"Jonathan Hieu Nguyen",city:"Sacramento, CA",lat:38.5816,lng:-121.4944,caretakers:[{city:"Vietnam",lat:14.0583,lng:108.2772},{city:"Vietnam",lat:14.0583,lng:108.2772}]},
-  {name:"Amarachi Brittany Onwuzurike",city:"Detroit, MI",lat:42.3314,lng:-83.0458,caretakers:[{city:"Imo State, Nigeria",lat:5.572,lng:7.0588},{city:"Aba, Nigeria",lat:5.1067,lng:7.3667}]},
-  {name:"Hunter Michael Pruett",city:"Los Angeles, CA",lat:34.0522,lng:-118.2437,caretakers:[{city:"Glendale, CA",lat:34.1425,lng:-118.2551},{city:"Armenia",lat:40.1792,lng:44.4991}]},
-  {name:"Hetvi Patel",city:"Northridge, CA",lat:34.2257,lng:-118.5368,caretakers:[{city:"Sajiyavadar, India",lat:21.5222,lng:70.4579},{city:"Ahmedabad, India",lat:23.0225,lng:72.5714}]},
-  {name:"Lydia-Rose Cannon",city:"Santa Clara, CA",lat:37.3541,lng:-121.9552,caretakers:[{city:"San Francisco, CA",lat:37.7749,lng:-122.4194},{city:"Palo Alto, CA",lat:37.4419,lng:-122.143}]},
-  {name:"Sandra Yvette Sanchez de Tagle",city:"Sacramento, CA",lat:38.5816,lng:-121.4944,caretakers:[{city:"Toluca, Mexico",lat:19.2826,lng:-99.6557}]},
-  {name:"Zara Wang",city:"San Jose, CA",lat:37.3382,lng:-121.8863,caretakers:[{city:"Lusaka, Zambia",lat:-15.3875,lng:28.3228},{city:"Pittsburgh, PA",lat:40.4406,lng:-79.9959}]},
-  {name:"Sihan Cheng",city:"Shenyang, China",lat:41.8057,lng:123.4315,caretakers:[{city:"Shenyang, China",lat:41.8057,lng:123.4315},{city:"Shenyang, China",lat:41.8057,lng:123.4315}]},
-  {name:"Naomi Susoev Lenchner",city:"San Francisco, CA",lat:37.7749,lng:-122.4194,caretakers:[{city:"San Francisco, CA",lat:37.7749,lng:-122.4194},{city:"Queens, NY",lat:40.7282,lng:-73.7949}]},
-  {name:"Emilie Lo",city:"Fremont, CA",lat:37.5485,lng:-121.9886,caretakers:[{city:"Taipei, Taiwan",lat:25.033,lng:121.5654},{city:"Chiayi, Taiwan",lat:23.48,lng:120.4491}]},
-  {name:"Alyssa Amanda Ruiz-Cortez",city:"Crescent City, CA",lat:41.7558,lng:-124.2026,caretakers:[{city:"Manuel Doblado, Mexico",lat:20.7281,lng:-101.9494},{city:"Manuel Doblado, Mexico",lat:20.7281,lng:-101.9494}]},
-  {name:"Tara Priya Nath",city:"Laguna Hills, CA",lat:33.6017,lng:-117.7073,caretakers:[{city:"Bihar, India",lat:25.0961,lng:85.3131},{city:"Bihar, India",lat:25.0961,lng:85.3131}]},
-  {name:"Edgar Lopez-Garcia",city:"Mountain View, CA",lat:37.3861,lng:-122.0839,caretakers:[{city:"Guatemala",lat:15.7835,lng:-90.2308},{city:"Guatemala",lat:15.7835,lng:-90.2308}]},
-  {name:"Rodney Peter Padovani Casanova",city:"San Juan, Puerto Rico",lat:18.4655,lng:-66.1057,caretakers:[{city:"San Juan, Puerto Rico",lat:18.4655,lng:-66.1057},{city:"Añasco, Puerto Rico",lat:18.2852,lng:-67.1408}]},
-  {name:"River Ma",city:"Hangzhou, China",lat:30.2741,lng:120.1551,caretakers:[{city:"Beilun, Ningbo, China",lat:29.9411,lng:121.839},{city:"Huainan, Anhui, China",lat:32.6255,lng:116.9996}]},
-  {name:"Shaona Das",city:"Santa Clara, CA",lat:37.3541,lng:-121.9552,caretakers:[{city:"India",lat:20.5937,lng:78.9629},{city:"India",lat:20.5937,lng:78.9629}]},
-  {name:"David Han",city:"Richmond, BC, Canada",lat:49.1666,lng:-123.1336,caretakers:[{city:"Jiangxi, China",lat:27.0869,lng:114.9042},{city:"Tianjin, China",lat:39.3434,lng:117.3616}]},
-  {name:"Eliot Cummings",city:"",lat:null,lng:null,caretakers:[{city:"Texas, USA",lat:31.9686,lng:-99.9018}]},
-  {name:"Diana Xa Nguyen",city:"Fremont, CA",lat:37.5485,lng:-121.9886,caretakers:[{city:"Mien Trung, Vietnam",lat:16.4637,lng:107.5909},{city:"Saigon, Vietnam",lat:10.8231,lng:106.6297}]},
-  {name:"Lizzy Yin",city:"Shanghai, China",lat:31.2304,lng:121.4737,caretakers:[{city:"China",lat:35.8617,lng:104.1954},{city:"China",lat:35.8617,lng:104.1954}]},
-  {name:"Yenifer Reyes",city:"Guatemala",lat:15.7835,lng:-90.2308,caretakers:[{city:"Guatemala",lat:15.7835,lng:-90.2308},{city:"Guatemala",lat:15.7835,lng:-90.2308}]},
-  {name:"Boyi Hu",city:"Chaoyang, Beijing, China",lat:39.9219,lng:116.4431,caretakers:[{city:"Beijing, China",lat:39.9042,lng:116.4074},{city:"Jiangxi, China",lat:27.0869,lng:114.9042}]},
-  {name:"Alberto Diaz",city:"Los Angeles, CA",lat:34.0522,lng:-118.2437,caretakers:[{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266},{city:"Guatemala City, Guatemala",lat:14.6349,lng:-90.5069}]},
-  {name:"Anthony League",city:"Riverside, CA",lat:33.9806,lng:-117.3755,caretakers:[{city:"Santa Ana, CA",lat:33.7455,lng:-117.8677},{city:"Santa Ana, CA",lat:33.7455,lng:-117.8677}]},
-  {name:"Sebastian Nicholas Hofmann",city:"Santa Clara, CA",lat:37.3541,lng:-121.9552,caretakers:[{city:"Munich, Germany",lat:48.1351,lng:11.582},{city:"Taipei, Taiwan",lat:25.033,lng:121.5654}]},
-  {name:"Marié Abe",city:"Tokyo, Japan",lat:35.6762,lng:139.6503,caretakers:[{city:"Tokyo, Japan",lat:35.6762,lng:139.6503},{city:"Tokyo, Japan",lat:35.6762,lng:139.6503}]},
-  {name:"Adriana Karina Charondo Redditt-Rodriguez",city:"San Jose, CA",lat:37.3382,lng:-121.8863,caretakers:[{city:"Quelimane, Mozambique",lat:-17.8784,lng:36.8881},{city:"Honolulu, Oahu, Hawaii",lat:21.3069,lng:-157.8583}]},
-  {name:"Mitsuki Shizukuishi",city:"Sendai, Japan",lat:38.2682,lng:140.8694,caretakers:[{city:"Sendai, Japan",lat:38.2682,lng:140.8694},{city:"Ishinomaki, Japan",lat:38.4333,lng:141.3}]}
+  {name:"Tyson Bui",lat:32.7157,lng:-117.1611,caretakers:[{city:"Vietnam",lat:14.0583,lng:108.2772},{city:"Vietnam",lat:14.0583,lng:108.2772}]},
+  {name:"Guadalupe Arellanes Matus",lat:36.6777,lng:-121.6555,caretakers:[{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266},{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266}]},
+  {name:"Gagik Aghajanyan",lat:34.1478,lng:-118.1445,caretakers:[{city:"Ejmiatsin, Armenia",lat:40.1672,lng:43.8335},{city:"Armavir, Armenia",lat:40.1544,lng:43.9997}]},
+  {name:"Elena Dolores Tyvoll",lat:32.7157,lng:-117.1611,caretakers:[{city:"Oslo, Norway",lat:59.9139,lng:10.7522},{city:"Guanajuato, Mexico",lat:21.019,lng:-101.2574}]},
+  {name:"Hubert Hyunsang Cho",lat:42.3314,lng:-83.0458,caretakers:[{city:"Seoul, South Korea",lat:37.5665,lng:126.978},{city:"Seoul, South Korea",lat:37.5665,lng:126.978}]},
+  {name:"Eun-Ju Chang",lat:34.0522,lng:-118.2437,caretakers:[{city:"Korea",lat:35.9078,lng:127.7669},{city:"Korea",lat:35.9078,lng:127.7669}]},
+  {name:"Sharlena Nhung Nguyen",lat:32.7157,lng:-117.1611,caretakers:[{city:"Bac Lieu, Vietnam",lat:9.2941,lng:105.7243},{city:"Bac Lieu, Vietnam",lat:9.2941,lng:105.7243}]},
+  {name:"Cesar Sanchez",lat:38.5816,lng:-121.4944,caretakers:[{city:"Mexico",lat:23.6345,lng:-102.5528},{city:"Mexico",lat:23.6345,lng:-102.5528}]},
+  {name:"Jenny Sun",lat:39.9042,lng:116.4074,caretakers:[{city:"Shandong, China",lat:36.6683,lng:117.0208},{city:"Hebei, China",lat:38.0428,lng:114.5149}]},
+  {name:"Luke Hayden Hollingsworth",lat:37.3382,lng:-121.8863,caretakers:[{city:"Santa Clara, CA",lat:37.3541,lng:-121.9552},{city:"Santa Clara, CA",lat:37.3541,lng:-121.9552}]},
+  {name:"Madison Kurtz",lat:33.0198,lng:-96.6989,caretakers:[{city:"Dayton, OH",lat:39.7589,lng:-84.1916},{city:"Taipei, Taiwan",lat:25.033,lng:121.5654}]},
+  {name:"Ethan Lee",lat:34.0522,lng:-118.2437,caretakers:[{city:"Korea",lat:35.9078,lng:127.7669},{city:"Korea",lat:35.9078,lng:127.7669}]},
+  {name:"Clark Huang Wang",lat:43.6532,lng:-79.3832,caretakers:[{city:"Shenyang, China",lat:41.8057,lng:123.4315}]},
+  {name:"Jonathan Tin-Jun Wu",lat:43.6532,lng:-79.3832,caretakers:[{city:"Hong Kong",lat:22.3193,lng:114.1694},{city:"Hong Kong",lat:22.3193,lng:114.1694}]},
+  {name:"Jonathan Hieu Nguyen",lat:38.5816,lng:-121.4944,caretakers:[{city:"Vietnam",lat:14.0583,lng:108.2772},{city:"Vietnam",lat:14.0583,lng:108.2772}]},
+  {name:"Amarachi Brittany Onwuzurike",lat:42.3314,lng:-83.0458,caretakers:[{city:"Imo State, Nigeria",lat:5.572,lng:7.0588},{city:"Aba, Nigeria",lat:5.1067,lng:7.3667}]},
+  {name:"Hunter Michael Pruett",lat:34.0522,lng:-118.2437,caretakers:[{city:"Glendale, CA",lat:34.1425,lng:-118.2551},{city:"Armenia",lat:40.1792,lng:44.4991}]},
+  {name:"Hetvi Patel",lat:34.2257,lng:-118.5368,caretakers:[{city:"Sajiyavadar, India",lat:21.5222,lng:70.4579},{city:"Ahmedabad, India",lat:23.0225,lng:72.5714}]},
+  {name:"Lydia-Rose Cannon",lat:37.3541,lng:-121.9552,caretakers:[{city:"San Francisco, CA",lat:37.7749,lng:-122.4194},{city:"Palo Alto, CA",lat:37.4419,lng:-122.143}]},
+  {name:"Sandra Yvette Sanchez de Tagle",lat:38.5816,lng:-121.4944,caretakers:[{city:"Toluca, Mexico",lat:19.2826,lng:-99.6557}]},
+  {name:"Zara Wang",lat:37.3382,lng:-121.8863,caretakers:[{city:"Lusaka, Zambia",lat:-15.3875,lng:28.3228},{city:"Pittsburgh, PA",lat:40.4406,lng:-79.9959}]},
+  {name:"Sihan Cheng",lat:41.8057,lng:123.4315,caretakers:[{city:"Shenyang, China",lat:41.8057,lng:123.4315}]},
+  {name:"Naomi Susoev Lenchner",lat:37.7749,lng:-122.4194,caretakers:[{city:"San Francisco, CA",lat:37.7749,lng:-122.4194},{city:"Queens, NY",lat:40.7282,lng:-73.7949}]},
+  {name:"Emilie Lo",lat:37.5485,lng:-121.9886,caretakers:[{city:"Taipei, Taiwan",lat:25.033,lng:121.5654},{city:"Chiayi, Taiwan",lat:23.48,lng:120.4491}]},
+  {name:"Alyssa Amanda Ruiz-Cortez",lat:41.7558,lng:-124.2026,caretakers:[{city:"Manuel Doblado, Mexico",lat:20.7281,lng:-101.9494},{city:"Manuel Doblado, Mexico",lat:20.7281,lng:-101.9494}]},
+  {name:"Tara Priya Nath",lat:33.6017,lng:-117.7073,caretakers:[{city:"Bihar, India",lat:25.0961,lng:85.3131},{city:"Bihar, India",lat:25.0961,lng:85.3131}]},
+  {name:"Edgar Lopez-Garcia",lat:37.3861,lng:-122.0839,caretakers:[{city:"Guatemala",lat:15.7835,lng:-90.2308},{city:"Guatemala",lat:15.7835,lng:-90.2308}]},
+  {name:"Rodney Peter Padovani Casanova",lat:18.4655,lng:-66.1057,caretakers:[{city:"San Juan, Puerto Rico",lat:18.4655,lng:-66.1057},{city:"Añasco, Puerto Rico",lat:18.2852,lng:-67.1408}]},
+  {name:"River Ma",lat:30.2741,lng:120.1551,caretakers:[{city:"Beilun, Ningbo, China",lat:29.9411,lng:121.839},{city:"Huainan, Anhui, China",lat:32.6255,lng:116.9996}]},
+  {name:"Shaona Das",lat:37.3541,lng:-121.9552,caretakers:[{city:"India",lat:20.5937,lng:78.9629},{city:"India",lat:20.5937,lng:78.9629}]},
+  {name:"David Han",lat:49.1666,lng:-123.1336,caretakers:[{city:"Jiangxi, China",lat:27.0869,lng:114.9042},{city:"Tianjin, China",lat:39.3434,lng:117.3616}]},
+  {name:"Eliot Cummings",lat:null,lng:null,caretakers:[{city:"Texas, USA",lat:31.9686,lng:-99.9018}]},
+  {name:"Diana Xa Nguyen",lat:37.5485,lng:-121.9886,caretakers:[{city:"Mien Trung, Vietnam",lat:16.4637,lng:107.5909},{city:"Saigon, Vietnam",lat:10.8231,lng:106.6297}]},
+  {name:"Lizzy Yin",lat:31.2304,lng:121.4737,caretakers:[{city:"China",lat:35.8617,lng:104.1954},{city:"China",lat:35.8617,lng:104.1954}]},
+  {name:"Yenifer Reyes",lat:15.7835,lng:-90.2308,caretakers:[{city:"Guatemala",lat:15.7835,lng:-90.2308},{city:"Guatemala",lat:15.7835,lng:-90.2308}]},
+  {name:"Boyi Hu",lat:39.9219,lng:116.4431,caretakers:[{city:"Beijing, China",lat:39.9042,lng:116.4074},{city:"Jiangxi, China",lat:27.0869,lng:114.9042}]},
+  {name:"Alberto Diaz",lat:34.0522,lng:-118.2437,caretakers:[{city:"Oaxaca, Mexico",lat:17.0732,lng:-96.7266},{city:"Guatemala City, Guatemala",lat:14.6349,lng:-90.5069}]},
+  {name:"Anthony League",lat:33.9806,lng:-117.3755,caretakers:[{city:"Santa Ana, CA",lat:33.7455,lng:-117.8677},{city:"Santa Ana, CA",lat:33.7455,lng:-117.8677}]},
+  {name:"Sebastian Nicholas Hofmann",lat:37.3541,lng:-121.9552,caretakers:[{city:"Munich, Germany",lat:48.1351,lng:11.582},{city:"Taipei, Taiwan",lat:25.033,lng:121.5654}]},
+  {name:"Marié Abe",lat:35.6762,lng:139.6503,caretakers:[{city:"Tokyo, Japan",lat:35.6762,lng:139.6503},{city:"Tokyo, Japan",lat:35.6762,lng:139.6503}]},
+  {name:"Adriana Karina Charondo Redditt-Rodriguez",lat:37.3382,lng:-121.8863,caretakers:[{city:"Quelimane, Mozambique",lat:-17.8784,lng:36.8881},{city:"Honolulu, Oahu, Hawaii",lat:21.3069,lng:-157.8583}]},
+  {name:"Mitsuki Shizukuishi",lat:38.2682,lng:140.8694,caretakers:[{city:"Sendai, Japan",lat:38.2682,lng:140.8694},{city:"Ishinomaki, Japan",lat:38.4333,lng:141.3}]}
 ];
 
 function getCountry(city) {
   var c = city.toLowerCase();
-  if (/vietnam|viet|bac lieu|mien trung|saigon|ho chi minh/.test(c)) return 'Vietnam';
+  if (/vietnam|viet|bac lieu|mien trung|saigon/.test(c)) return 'Vietnam';
   if (/china|beijing|shanghai|shandong|hebei|jiangxi|tianjin|shenyang|hangzhou|ningbo|huainan|chaoyang|beilun/.test(c)) return 'China';
   if (/korea|seoul/.test(c)) return 'Korea';
   if (/japan|tokyo|sendai|ishinomaki/.test(c)) return 'Japan';
@@ -164,58 +164,34 @@ var COUNTRY_COLORS = {
 };
 
 function initGlobe() {
-  var wrap = document.getElementById('globe-wrap');
-  var W = wrap.clientWidth;
-  var H = wrap.clientHeight;
-  var R = Math.min(W, H) * 0.42;
-  var svg = d3.select('#globe').attr('width', W).attr('height', H);
+  var wrap  = document.getElementById('globe-wrap');
+  var W     = wrap.clientWidth;
+  var H     = wrap.clientHeight;
+  var R     = Math.min(W, H) * 0.42;
+  var canvas = document.getElementById('globe');
+  canvas.width  = W;
+  canvas.height = H;
+  var ctx   = canvas.getContext('2d');
   var tooltip = document.getElementById('tooltip');
 
-  var projection = d3.geoOrthographic()
-    .scale(R)
-    .translate([W/2, H/2])
-    .clipAngle(90)
-    .rotate([100, -30]); // start centered on Pacific
+  var rotate   = [-100, -30, 0];
+  var scale    = R;
 
-  var path = d3.geoPath().projection(projection);
-
-  // Globe base layers
-  var defs = svg.append('defs');
-  var grad = defs.append('radialGradient').attr('id','globe-grad')
-    .attr('cx','35%').attr('cy','35%');
-  grad.append('stop').attr('offset','0%').attr('stop-color','#1e1e30');
-  grad.append('stop').attr('offset','100%').attr('stop-color','#0a0a14');
-
-  svg.append('circle').attr('cx',W/2).attr('cy',H/2).attr('r',R)
-    .attr('fill','url(#globe-grad)').attr('stroke','#2a2a40').attr('stroke-width',0.5);
-
-  var gGraticule = svg.append('g');
-  var gLand      = svg.append('g');
-  var gLines     = svg.append('g');
-  var gDots      = svg.append('g');
-
-  // Graticule
-  gGraticule.append('path').datum(d3.geoGraticule()())
-    .attr('fill','none').attr('stroke','#1e1e30').attr('stroke-width',0.4);
-
-  // Load land
-  d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json').then(function(world) {
-    var land = topojson_feature(world, world.objects.land);
-    gLand.append('path').datum(land)
-      .attr('fill','#1e2235').attr('stroke','#2d3050').attr('stroke-width',0.4);
-    redraw();
-  }).catch(function() {
-    // fallback if topojson not available — just redraw dots/lines
-    redraw();
-  });
+  function projection() {
+    return d3.geoOrthographic()
+      .scale(scale)
+      .translate([W/2, H/2])
+      .clipAngle(90)
+      .rotate(rotate);
+  }
 
   // Build arc data
   var arcData = [];
-  var countryArcs = {};
-  var studentArcs = {};
+  var countryArcs  = {};
+  var studentArcs  = {};
 
   STUDENTS.forEach(function(s) {
-    if (s.lat == null || s.lng == null) return;
+    if (s.lat == null) return;
     studentArcs[s.name] = [];
     var drawn = {};
     s.caretakers.forEach(function(c) {
@@ -224,14 +200,12 @@ function initGlobe() {
       if (drawn[ck]) return;
       drawn[ck] = true;
       var country = getCountry(c.city);
-      var color = COUNTRY_COLORS[country] || '#6b7280';
+      var color   = COUNTRY_COLORS[country] || '#6b7280';
       var arc = {
-        type: 'LineString',
-        coordinates: [[s.lng, s.lat],[c.lng, c.lat]],
-        color: color,
-        country: country,
-        studentName: s.name,
-        caretakerCity: c.city
+        geo: { type:'LineString', coordinates:[[s.lng,s.lat],[c.lng,c.lat]] },
+        color: color, country: country,
+        studentName: s.name, caretakerCity: c.city,
+        sLat: s.lat, sLng: s.lng, cLat: c.lat, cLng: c.lng
       };
       arcData.push(arc);
       studentArcs[s.name].push(arc);
@@ -240,110 +214,280 @@ function initGlobe() {
     });
   });
 
-  // Draw arcs
-  var arcPaths = gLines.selectAll('path.arc').data(arcData).enter()
-    .append('path').attr('class','arc')
-    .attr('fill','none')
-    .attr('stroke', function(d){ return d.color; })
-    .attr('stroke-width', 1)
-    .attr('stroke-opacity', 0.12)
-    .attr('d', path);
+  // Pre-compute same-origin rings per participant
+  var participantRings = {}; // name -> [colors]
+  var arcDupCount = {};      // arc key -> count (for x2 badge)
 
-  // Draw dots
-  var dotData = [];
   STUDENTS.forEach(function(s) {
-    if (s.lat == null || s.lng == null) return;
-    // avoid dupes
-    var k = s.lat.toFixed(3)+','+s.lng.toFixed(3);
-    if (!dotData._seen) dotData._seen = {};
-    if (!dotData._seen[k]) {
-      dotData._seen[k] = true;
-      var names = STUDENTS.filter(function(x){ return x.lat === s.lat && x.lng === s.lng; }).map(function(x){ return x.name; });
-      dotData.push({ lat: s.lat, lng: s.lng, names: names, type: 'student' });
-    }
+    if (s.lat == null) return;
+    var sk = s.lat.toFixed(3)+','+s.lng.toFixed(3);
+    participantRings[s.name] = [];
+    var cityCount = {};
     s.caretakers.forEach(function(c) {
       if (!c.lat || !c.lng) return;
       var ck = c.lat.toFixed(3)+','+c.lng.toFixed(3);
-      if (!dotData._seen[ck]) {
-        dotData._seen[ck] = true;
+      cityCount[ck] = (cityCount[ck]||0) + 1;
+      if (ck === sk) {
         var country = getCountry(c.city);
-        dotData.push({ lat: c.lat, lng: c.lng, city: c.city, country: country, type: 'caretaker' });
+        var color = COUNTRY_COLORS[country] || '#6b7280';
+        participantRings[s.name].push(color);
       }
     });
-  });
-
-  var dots = gDots.selectAll('circle').data(dotData).enter()
-    .append('circle')
-    .attr('r', function(d){ return d.type === 'student' ? 4 : 3; })
-    .attr('fill', function(d){ return d.type === 'student' ? '#7c6fcd' : (COUNTRY_COLORS[d.country] || '#6b7280'); })
-    .attr('stroke', '#0e0e12').attr('stroke-width', 1)
-    .attr('opacity', 0.9)
-    .style('cursor','pointer')
-    .on('mousemove', function(event, d) {
-      var label = d.type === 'student' ? d.names.join(', ') : d.city;
-      tooltip.style.display = 'block';
-      tooltip.style.left = (event.offsetX + 12) + 'px';
-      tooltip.style.top  = (event.offsetY - 8)  + 'px';
-      tooltip.textContent = label;
-    })
-    .on('mouseleave', function() { tooltip.style.display = 'none'; });
-
-  function redraw() {
-    gGraticule.select('path').attr('d', path);
-    gLand.select('path').attr('d', path);
-    arcPaths.attr('d', path);
-    dots.attr('cx', function(d) {
-      var p = projection([d.lng, d.lat]);
-      return p ? p[0] : -9999;
-    }).attr('cy', function(d) {
-      var p = projection([d.lng, d.lat]);
-      return p ? p[1] : -9999;
-    }).attr('opacity', function(d) {
-      var p = projection([d.lng, d.lat]);
-      return p ? 0.9 : 0;
+    // store dup counts on arcs
+    Object.keys(cityCount).forEach(function(ck) {
+      var key = s.name+'|'+ck;
+      arcDupCount[key] = cityCount[ck];
     });
-  }
-
-  // Drag to rotate
-  var dragStart;
-  svg.call(d3.drag()
-    .on('start', function(event) {
-      dragStart = { x: event.x, y: event.y, rotate: projection.rotate().slice() };
-    })
-    .on('drag', function(event) {
-      var dx = event.x - dragStart.x;
-      var dy = event.y - dragStart.y;
-      var r = dragStart.rotate;
-      projection.rotate([r[0] + dx * 0.3, r[1] - dy * 0.3, r[2]]);
-      redraw();
-    })
-  );
-
-  // Scroll to zoom
-  svg.on('wheel', function(event) {
-    event.preventDefault();
-    var s = projection.scale();
-    projection.scale(Math.max(50, Math.min(1200, s - event.deltaY * 0.5)));
-    redraw();
   });
 
   // State
   var activeStudent = null;
   var activeCountry = null;
+  var land = null;
 
-  function clearAll() {
-    activeStudent = null;
-    activeCountry = null;
-    arcPaths.attr('stroke-opacity', 0.12).attr('stroke-width', 1);
-    document.querySelectorAll('.s-item').forEach(function(e){ e.classList.remove('active'); });
-    document.querySelectorAll('.leg-row').forEach(function(e){ e.classList.remove('active'); });
+  function hexToRgba(hex, alpha) {
+    var r = parseInt(hex.slice(1,3),16);
+    var g = parseInt(hex.slice(3,5),16);
+    var b = parseInt(hex.slice(5,7),16);
+    return 'rgba('+r+','+g+','+b+','+alpha+')';
   }
 
-  function highlightArcs(filterFn) {
-    arcPaths
-      .attr('stroke-opacity', function(d){ return filterFn(d) ? 0.85 : 0.04; })
-      .attr('stroke-width',   function(d){ return filterFn(d) ? 2.5  : 0.8; });
+  function draw() {
+    var proj = projection();
+    var pathGen = d3.geoPath().projection(proj).context(ctx);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // Ocean
+    ctx.beginPath();
+    pathGen({type:'Sphere'});
+    var grad = ctx.createRadialGradient(W/2-R*0.2, H/2-R*0.2, R*0.1, W/2, H/2, R);
+    grad.addColorStop(0, '#1e1e30');
+    grad.addColorStop(1, '#0a0a14');
+    ctx.fillStyle = grad;
+    ctx.fill();
+    ctx.strokeStyle = '#2a2a40';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Graticule
+    ctx.beginPath();
+    pathGen(d3.geoGraticule()());
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
+
+    // Land
+    if (land) {
+      ctx.beginPath();
+      pathGen(land);
+      ctx.fillStyle = '#1e2235';
+      ctx.fill();
+      ctx.strokeStyle = '#2d3050';
+      ctx.lineWidth = 0.4;
+      ctx.stroke();
+    }
+
+    // Arcs
+    arcData.forEach(function(arc) {
+      var isActive = (activeStudent && arc.studentName === activeStudent) ||
+                     (activeCountry && arc.country === activeCountry);
+      var dim = activeStudent || activeCountry;
+      var opacity = dim ? (isActive ? 0.9 : 0.03) : 0.15;
+      var width   = isActive ? 2 : 1;
+      ctx.beginPath();
+      pathGen(arc.geo);
+      ctx.strokeStyle = hexToRgba(arc.color, opacity);
+      ctx.lineWidth = width;
+      ctx.stroke();
+    });
+
+    // Dots — caretakers first, students on top
+    var proj2 = projection();
+    function drawDot(lng, lat, color, r) {
+      var p = proj2([lng, lat]);
+      if (!p) return;
+      // check if on visible hemisphere
+      var gp = d3.geoOrthographic().scale(scale).translate([W/2,H/2]).clipAngle(90).rotate(rotate);
+      var visible = d3.geoContains({type:'Sphere'}, [lng, lat]);
+      // use clipAngle check via path
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], r, 0, 2*Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#0e0e12';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    }
+
+    var projFn = d3.geoOrthographic().scale(scale).translate([W/2,H/2]).clipAngle(90).rotate(rotate);
+    var clipPath = d3.geoPath().projection(projFn);
+
+    arcData.forEach(function(arc) {
+      var p = projFn([arc.cLng, arc.cLat]);
+      if (!p) return;
+      var country = arc.country;
+      var color = COUNTRY_COLORS[country] || '#6b7280';
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 3, 0, 2*Math.PI);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.strokeStyle = '#0e0e12';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    });
+
+    STUDENTS.forEach(function(s) {
+      if (s.lat == null) return;
+      var p = projFn([s.lng, s.lat]);
+      if (!p) return;
+      var rings = participantRings[s.name] || [];
+      var uniqueRings = [];
+      rings.forEach(function(r){ if (uniqueRings.indexOf(r)===-1) uniqueRings.push(r); });
+      uniqueRings = uniqueRings.slice(0,2);
+      // draw rings outward first
+      uniqueRings.forEach(function(rc, i) {
+        var rr = 4 + (i===0 ? 7 : 13);
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], rr, 0, 2*Math.PI);
+        ctx.strokeStyle = rc;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.7;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      });
+      // participant dot
+      ctx.beginPath();
+      ctx.arc(p[0], p[1], 4, 0, 2*Math.PI);
+      ctx.fillStyle = '#7c6fcd';
+      ctx.fill();
+      ctx.strokeStyle = '#0e0e12';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // x2 badges — only when a participant or country is active
+    if (activeStudent || activeCountry) {
+      arcData.forEach(function(arc) {
+        var isActive = (activeStudent && arc.studentName === activeStudent) ||
+                       (activeCountry && arc.country === activeCountry);
+        if (!isActive) return;
+        var key = arc.studentName+'|'+arc.cLat.toFixed(3)+','+arc.cLng.toFixed(3);
+        var count = arcDupCount[key] || 1;
+        if (count < 2) return;
+        // true great-circle midpoint via interpolation
+        var interp = d3.geoInterpolate([arc.sLng, arc.sLat], [arc.cLng, arc.cLat]);
+        var mid = interp(0.5);
+        var mp = projFn(mid);
+        if (!mp) return;
+        var label = '×' + count;
+        var br = 14;
+        ctx.beginPath();
+        ctx.arc(mp[0], mp[1], br, 0, 2*Math.PI);
+        ctx.fillStyle = arc.color;
+        ctx.fill();
+        ctx.font = 'bold 13px -apple-system, sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, mp[0], mp[1]);
+      });
+    }
   }
+
+  // Load land data
+  d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json').then(function(world) {
+    land = topojson.feature(world, world.objects.land);
+    draw();
+  });
+
+  draw();
+
+  // Mouse drag to rotate
+  var dragging = false;
+  var lastX, lastY;
+
+  canvas.addEventListener('mousedown', function(e) {
+    dragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    canvas.classList.add('dragging');
+  });
+  window.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    var dx = e.clientX - lastX;
+    var dy = e.clientY - lastY;
+    rotate[0] += dx * 0.3;
+    rotate[1] -= dy * 0.3;
+    rotate[1] = Math.max(-90, Math.min(90, rotate[1]));
+    lastX = e.clientX;
+    lastY = e.clientY;
+    draw();
+  });
+  window.addEventListener('mouseup', function() {
+    dragging = false;
+    canvas.classList.remove('dragging');
+  });
+
+  // Touch drag
+  var lastTX, lastTY;
+  canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    lastTX = e.touches[0].clientX;
+    lastTY = e.touches[0].clientY;
+  }, {passive:false});
+  canvas.addEventListener('touchmove', function(e) {
+    e.preventDefault();
+    var dx = e.touches[0].clientX - lastTX;
+    var dy = e.touches[0].clientY - lastTY;
+    rotate[0] += dx * 0.3;
+    rotate[1] -= dy * 0.3;
+    rotate[1] = Math.max(-90, Math.min(90, rotate[1]));
+    lastTX = e.touches[0].clientX;
+    lastTY = e.touches[0].clientY;
+    draw();
+  }, {passive:false});
+
+  // Scroll to zoom
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    scale = Math.max(80, Math.min(1400, scale - e.deltaY * 0.5));
+    draw();
+  }, {passive:false});
+
+  // Tooltip on hover
+  canvas.addEventListener('mousemove', function(e) {
+    if (dragging) { tooltip.style.display = 'none'; return; }
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.left;
+    var my = e.clientY - rect.top;
+    var projFn = d3.geoOrthographic().scale(scale).translate([W/2,H/2]).clipAngle(90).rotate(rotate);
+    var found = null;
+    // check students first
+    STUDENTS.forEach(function(s) {
+      if (s.lat == null) return;
+      var p = projFn([s.lng, s.lat]);
+      if (!p) return;
+      if (Math.hypot(p[0]-mx, p[1]-my) < 8) found = s.name;
+    });
+    if (!found) {
+      arcData.forEach(function(arc) {
+        var p = projFn([arc.cLng, arc.cLat]);
+        if (!p) return;
+        if (Math.hypot(p[0]-mx, p[1]-my) < 6) found = arc.caretakerCity;
+      });
+    }
+    if (found) {
+      tooltip.style.display = 'block';
+      tooltip.style.left = (mx + 14) + 'px';
+      tooltip.style.top  = (my - 8)  + 'px';
+      tooltip.textContent = found;
+    } else {
+      tooltip.style.display = 'none';
+    }
+  });
+
+  canvas.addEventListener('mouseleave', function() { tooltip.style.display = 'none'; });
 
   // Sidebar
   var list = document.getElementById('student-list');
@@ -351,24 +495,31 @@ function initGlobe() {
     var el = document.createElement('div');
     el.className = 's-item';
     el.textContent = s.name;
-    el.dataset.name = s.name;
     el.addEventListener('click', function() {
       if (activeStudent === s.name) {
-        clearAll();
+        activeStudent = null;
+        el.classList.remove('active');
       } else {
-        clearAll();
         activeStudent = s.name;
+        activeCountry = null;
+        document.querySelectorAll('.s-item').forEach(function(e){ e.classList.remove('active'); });
+        document.querySelectorAll('.leg-row').forEach(function(e){ e.classList.remove('active'); });
         el.classList.add('active');
-        highlightArcs(function(d){ return d.studentName === s.name; });
         if (s.lat != null) {
-          var r = projection.rotate();
-          // rotate to student
-          d3.transition().duration(800).tween('rotate', function() {
-            var ri = d3.interpolate(r, [-s.lng, -s.lat, 0]);
-            return function(t) { projection.rotate(ri(t)); redraw(); };
-          });
+          // animate rotate to student
+          var startRotate = rotate.slice();
+          var endRotate = [-s.lng, -s.lat, 0];
+          var t = 0;
+          var anim = setInterval(function() {
+            t += 0.05;
+            if (t >= 1) { t = 1; clearInterval(anim); }
+            rotate[0] = startRotate[0] + (endRotate[0] - startRotate[0]) * t;
+            rotate[1] = startRotate[1] + (endRotate[1] - startRotate[1]) * t;
+            draw();
+          }, 16);
         }
       }
+      draw();
     });
     list.appendChild(el);
   });
@@ -383,49 +534,19 @@ function initGlobe() {
     row.innerHTML = '<div class="leg-swatch" style="background:'+color+';"></div>'+country;
     row.addEventListener('click', function() {
       if (activeCountry === country) {
-        clearAll();
+        activeCountry = null;
+        row.classList.remove('active');
       } else {
-        clearAll();
         activeCountry = country;
+        activeStudent = null;
+        document.querySelectorAll('.s-item').forEach(function(e){ e.classList.remove('active'); });
+        document.querySelectorAll('.leg-row').forEach(function(e){ e.classList.remove('active'); });
         row.classList.add('active');
-        highlightArcs(function(d){ return d.country === country; });
       }
+      draw();
     });
     legendRows.appendChild(row);
   });
-}
-
-// Minimal topojson feature extractor (avoid external dependency)
-function topojson_feature(topology, o) {
-  return { type: 'FeatureCollection', features: o.geometries.map(function(g) {
-    return { type: 'Feature', geometry: topojson_geometry(topology, g), properties: {} };
-  })};
-}
-function topojson_geometry(topology, o) {
-  var arcs = topology.arcs;
-  function arc(i, p) {
-    if (i < 0) { var a = arcs[~i].slice().reverse(); } else { var a = arcs[i]; }
-    a.forEach(function(pt, j) {
-      if (j) { p[p.length-1][0] += pt[0]; p[p.length-1][1] += pt[1]; }
-      else p.push([pt[0], pt[1]]);
-    });
-  }
-  function rings(arcs_list) {
-    return arcs_list.map(function(ring) {
-      var p = []; ring.forEach(function(i){ arc(i,p); }); return p;
-    });
-  }
-  var scale = topology.transform ? topology.transform.scale : [1,1];
-  var translate = topology.transform ? topology.transform.translate : [0,0];
-  function decode(coords) {
-    var x=0,y=0;
-    return coords.map(function(p){ x+=p[0]; y+=p[1]; return [(x*scale[0]+translate[0]), (y*scale[1]+translate[1])]; });
-  }
-  arcs = arcs.map(decode);
-  if (o.type === 'Polygon') return { type:'Polygon', coordinates: rings(o.arcs) };
-  if (o.type === 'MultiPolygon') return { type:'MultiPolygon', coordinates: o.arcs.map(rings) };
-  if (o.type === 'GeometryCollection') return { type:'GeometryCollection', geometries: o.geometries.map(function(g){ return topojson_geometry(topology,g); }) };
-  return { type: o.type, coordinates: [] };
 }
 </script>
 </body>

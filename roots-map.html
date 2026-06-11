@@ -222,6 +222,399 @@ function initMap() {
 
   function makeDot(lat, lng, color, size, tipHtml, isStudent, rings) {
     rings = rings || [];
+    const uniqueRings = [...new Set(rings)].slice(0, 2);
+    let ringHtml = '';
+    uniqueRings.forEach(function(rc, i) {
+      const offset = (i === 0 ? size + 7 : size + 14);
+      ringHtml += '<div style="pointer-events:none;position:absolute;top:50%;left:50%;width:' + offset + 'px;height:' + offset + 'px;border-radius:50%;border:2px solid ' + rc + ';transform:translate(-50%,-50%);opacity:0.6;"></div>';
+    });
+    let pulseHtml = isStudent ? '<div class="pulse-ring" style="display:none;position:absolute;top:50%;left:50%;width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';animation:pulse-ring 1.2s ease-out infinite;"></div>' : '';
+    const dotHtml = '<div style="width:' + size + 'px;height:' + size + 'px;border-radius:50%;background:' + color + ';border:1.5px solid white;outline:1px solid ' + color + ';cursor:pointer;position:relative;">' + ringHtml + pulseHtml + '</div>';
+    const icon = L.divIcon({
+      html: dotHtml,
+      iconSize: [size,size], iconAnchor: [size/2,size/2], className:''
+    });
+    return L.marker([lat,lng],{icon}).bindTooltip(tipHtml,{permanent:false,direction:'top',className:'rt',offset:[0,-6]});
+  }
+
+  function setMarkerActive(marker, active, color) {
+    if (!marker) return;
+    if (active) {
+      const activeHtml = '<div style="width:15px;height:15px;border-radius:50%;background:' + color + ';border:2px solid white;outline:2px solid ' + color + ';box-shadow:0 0 0 4px ' + color + '33;cursor:pointer;position:relative;"><div class="pulse-ring" style="position:absolute;top:50%;left:50%;width:15px;height:15px;border-radius:50%;background:' + color + ';animation:pulse-ring 1.2s ease-out infinite;"></div></div>';
+      marker.setIcon(L.divIcon({ html: activeHtml, iconSize:[15,15], iconAnchor:[7.5,7.5], className:'' }));
+    } else {
+      const rings = marker._rings || [];
+      const uniqueRings = [...new Set(rings)].slice(0, 2);
+      let ringHtml = '';
+      uniqueRings.forEach(function(rc, i) {
+        const offset = (i === 0 ? 17 : 24);
+        ringHtml += '<div style="pointer-events:none;position:absolute;top:50%;left:50%;width:' + offset + 'px;height:' + offset + 'px;border-radius:50%;border:2px solid ' + rc + ';transform:translate(-50%,-50%);opacity:0.6;"></div>';
+      });
+      const inactiveHtml = '<div style="width:10px;height:10px;border-radius:50%;background:' + color + ';border:1.5px solid white;outline:1px solid ' + color + ';cursor:pointer;position:relative;">' + ringHtml + '</div>';
+      marker.setIcon(L.divIcon({ html: inactiveHtml, iconSize:[10,10], iconAnchor:[5,5], className:'' }));
+      marker._rings = rings;
+    }
+  }
+
+  // Build per-student and per-country line layers
+  const studentLayers = {};
+  const countryLines  = {};
+  const allLines      = [];
+
+  STUDENTS.forEach(s => {
+    const layers = { lines: [] };
+    studentLayers[s.name] = layers;
+    if (s.lat == null || s.lng == null) return;
+    const drawnLines = new Set();
+    s.caretakers.forEach(c => {
+      if (!c.lat || !c.lng) return;
+      const ck = key(c.lat, c.lng);
+      if (drawnLines.has(ck)) return;
+      drawnLines.add(ck);
+      const country = getCountry(c.city);
+      const color = COUNTRY_COLORS[country] || '#9ca3af';
+      const line = L.polyline([[s.lat,s.lng],[c.lat,c.lng]], {
+        color, weight: 2, opacity: DIM_OPACITY
+      }).addTo(map);
+      layers.lines.push(line);
+      allLines.push(line);
+      if (!countryLines[country]) countryLines[country] = [];
+      countryLines[country].push(line);
+    });
+  });
+
+  // Group student markers by location, tracking same-city caretakers for rings
+  const studentsByLoc = {};
+  STUDENTS.forEach(s => {
+    if (s.lat == null || s.lng == null) return;
+    const k = key(s.lat, s.lng);
+    if (!studentsByLoc[k]) studentsByLoc[k] = { lat: s.lat, lng: s.lng, names: [], rings: [] };
+    studentsByLoc[k].names.push(s.name);
+    // check each caretaker — if coords match student, add a ring in their country color
+    s.caretakers.forEach(c => {
+      if (!c.lat || !c.lng) return;
+      if (key(c.lat, c.lng) === k) {
+        const country = getCountry(c.city);
+        const color = COUNTRY_COLORS[country] || '#9ca3af';
+        studentsByLoc[k].rings.push(color);
+      }
+    });
+  });
+
+  // Draw caretaker dots
+  const caretakersByLoc = {};
+  STUDENTS.forEach(s => {
+    s.caretakers.forEach(c => {
+      if (!c.lat || !c.lng) return;
+      const k = key(c.lat, c.lng);
+      if (!caretakersByLoc[k]) caretakersByLoc[k] = { lat: c.lat, lng: c.lng, city: c.city };
+    });
+  });
+  Object.values(caretakersByLoc).forEach(c => {
+    const country = getCountry(c.city);
+    const color = COUNTRY_COLORS[country] || '#9ca3af';
+    makeDot(c.lat, c.lng, color, 7, c.city, false).addTo(map);
+  });
+
+  // Draw student dots
+  const studentMarkers = {};
+  Object.values(studentsByLoc).forEach(loc => {
+    const tipHtml = loc.names.length === 1
+      ? `<span class="rt-name">${loc.names[0]}</span>`
+      : loc.names.map((n,i) => (i>0?'<hr class="rt-divider">':'')+`<span class="rt-name">${n}</span>`).join('');
+    const m = makeDot(loc.lat, loc.lng, S_COLOR, 10, tipHtml, true, loc.rings).addTo(map);
+    m._rings = loc.rings || [];
+    loc.names.forEach(n => { studentMarkers[n] = m; });
+  });
+
+  const allBounds = [
+    ...Object.values(studentsByLoc).map(l => [l.lat, l.lng]),
+    ...Object.values(caretakersByLoc).map(c => [c.lat, c.lng])
+  ];
+  if (allBounds.length) map.fitBounds(allBounds, { padding: [40, 40] });
+
+  // Shared state
+  let activeStudent = null;
+  let activeCountry = null;
+
+  function clearAll() {
+    activeStudent = null;
+    activeCountry = null;
+    document.querySelectorAll('.s-item').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.leg-row').forEach(e => e.classList.remove('active'));
+    allLines.forEach(l => l.setStyle({ opacity: DIM_OPACITY, weight: 2 }));
+    Object.values(studentMarkers).forEach(m => setMarkerActive(m, false, S_COLOR));
+  }
+
+  // Sidebar
+  const list = document.getElementById('student-list');
+  STUDENTS.slice().sort((a,b) => a.name.localeCompare(b.name)).forEach(s => {
+    const el = document.createElement('div');
+    el.className = 's-item';
+    el.textContent = s.name;
+    el.dataset.name = s.name;
+    el.addEventListener('click', () => {
+      const marker = studentMarkers[s.name];
+      if (activeStudent === s.name) {
+        clearAll();
+      } else {
+        clearAll();
+        el.classList.add('active');
+        activeStudent = s.name;
+        (studentLayers[s.name]?.lines || []).forEach(l => l.setStyle({ opacity: ACTIVE_OPACITY, weight: 3 }));
+        setMarkerActive(marker, true, S_COLOR);
+        if (s.lat != null) map.setView([s.lat, s.lng], 3, { animate: true });
+      }
+    });
+    list.appendChild(el);
+  });
+
+  // Legend — clickable by country, mutually exclusive with sidebar
+  const legendRows = document.getElementById('legend-rows');
+  Object.entries(COUNTRY_COLORS).forEach(([country, color]) => {
+    if (!countryLines[country]) return; // skip countries not in data
+    const row = document.createElement('div');
+    row.className = 'leg-row';
+    row.innerHTML = `<div class="leg-swatch" style="background:${color};"></div>${country}`;
+    row.addEventListener('click', () => {
+      if (activeCountry === country) {
+        clearAll();
+      } else {
+        clearAll();
+        activeCountry = country;
+        row.classList.add('active');
+        (countryLines[country] || []).forEach(l => l.setStyle({ opacity: ACTIVE_OPACITY, weight: 3 }));
+      }
+    });
+    legendRows.appendChild(row);
+  });
+}
+</script>
+</body>
+</html>---
+layout: null
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roots Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f7f4; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+#header { padding: 14px 20px; background: white; border-bottom: 0.5px solid #d3d1c7; flex-shrink: 0; }
+#header h1 { font-size: 17px; font-weight: 500; color: #2C2C2A; }
+#header p  { font-size: 12px; color: #888780; margin-top: 2px; }
+#body { display: flex; flex: 1; overflow: hidden; }
+#sidebar {
+  width: 230px; flex-shrink: 0; background: white;
+  border-right: 0.5px solid #d3d1c7; overflow-y: auto;
+  padding: 10px 0;
+}
+#sidebar-title { font-size: 11px; font-weight: 500; color: #888780; text-transform: uppercase; letter-spacing: 0.06em; padding: 4px 16px 8px; }
+.s-item {
+  padding: 7px 16px; font-size: 13px; color: #444441; cursor: pointer;
+  border-left: 3px solid transparent; transition: background 0.1s;
+  line-height: 1.35;
+}
+.s-item:hover { background: #f1efe8; }
+.s-item.active { background: #eeedfe; border-left-color: #534AB7; color: #3C3489; font-weight: 500; }
+#map-wrap { flex: 1; position: relative; }
+#map { height: 100%; width: 100%; }
+#legend {
+  position: absolute; bottom: 20px; right: 16px; z-index: 1000;
+  background: white; border: 0.5px solid #d3d1c7; border-radius: 10px;
+  padding: 10px 14px; max-height: 50vh; overflow-y: auto;
+}
+.leg-row {
+  display: flex; align-items: center; gap: 7px; font-size: 11px; color: #5F5E5A;
+  padding: 3px 4px; border-radius: 5px; cursor: pointer; transition: background 0.1s;
+}
+.leg-row:hover { background: #f1efe8; }
+.leg-row.active { background: #eeedfe; color: #3C3489; font-weight: 500; }
+.leg-swatch { width: 22px; height: 3px; border-radius: 2px; flex-shrink: 0; }
+.leaflet-tooltip.rt {
+  background: white; border: 0.5px solid #d3d1c7; border-radius: 6px;
+  padding: 5px 10px; font-size: 12px; color: #2C2C2A; line-height: 1.6;
+  box-shadow: none; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.leaflet-tooltip.rt::before { display: none; }
+.rt-name { font-weight: 500; display: block; }
+.rt-divider { border: none; border-top: 0.5px solid #d3d1c7; margin: 3px 0; }
+@keyframes pulse-ring {
+  0%   { transform: translate(-50%,-50%) scale(1);   opacity: 0.6; }
+  100% { transform: translate(-50%,-50%) scale(2.6); opacity: 0; }
+}
+#gate {
+  position: fixed; inset: 0; background: #f8f7f4; z-index: 9999;
+  display: flex; align-items: center; justify-content: center;
+}
+#gate-box {
+  background: white; border: 0.5px solid #d3d1c7; border-radius: 12px;
+  padding: 32px 36px; width: 300px; text-align: center;
+}
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div id="gate-box">
+    <p style="font-size:15px;font-weight:500;color:#2C2C2A;margin-bottom:6px;">Roots map</p>
+    <p style="font-size:13px;color:#888780;margin-bottom:20px;">Enter the class password to continue</p>
+    <input id="pw" type="password" placeholder="Password" autofocus
+      style="width:100%;padding:8px 12px;font-size:14px;border:0.5px solid #d3d1c7;border-radius:8px;outline:none;margin-bottom:10px;"/>
+    <div id="pw-error" style="font-size:12px;color:#A32D2D;min-height:16px;margin-bottom:8px;"></div>
+    <button onclick="checkPassword()"
+      style="width:100%;padding:9px;font-size:14px;background:#534AB7;color:white;border:none;border-radius:8px;cursor:pointer;">
+      Enter
+    </button>
+  </div>
+</div>
+
+<div id="header">
+  <h1>Roots</h1>
+  <p>Caretaker origins — click a name or origin to highlight connections</p>
+  <p style="font-size:11px;color:#aaa9a5;margin-top:2px;">Where only a country was given, the pin reflects the geographic center.</p>
+  <a href="https://forms.gle/iKVz44AckcfSExUP8" target="_blank"
+     style="font-size:12px;color:#534AB7;text-decoration:none;margin-top:4px;display:inline-block;">
+    Update your information →
+  </a>
+</div>
+
+<div id="body">
+  <div id="sidebar">
+    <div id="sidebar-title">Music 26 Class Participants</div>
+    <div id="student-list"></div>
+  </div>
+  <div id="map-wrap">
+    <div id="map"></div>
+    <div id="legend">
+      <div style="font-size:11px;font-weight:500;color:#888780;margin-bottom:6px;">Origin</div>
+      <div id="legend-rows"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.getElementById('pw').addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
+function checkPassword() {
+  if (document.getElementById('pw').value === 'Mus26') {
+    document.getElementById('gate').style.display = 'none';
+    initMap();
+  } else {
+    document.getElementById('pw-error').textContent = 'Incorrect password.';
+    document.getElementById('pw').value = '';
+    document.getElementById('pw').focus();
+  }
+}
+
+const STUDENTS = [
+  {"name":"Tyson Bui","city":"San Diego, CA","lat":32.7157,"lng":-117.1611,"caretakers":[{"city":"Vietnam","lat":14.0583,"lng":108.2772,"gen":1},{"city":"Vietnam","lat":14.0583,"lng":108.2772,"gen":1}]},
+  {"name":"Guadalupe Arellanes Matus","city":"Salinas, CA","lat":36.6777,"lng":-121.6555,"caretakers":[{"city":"Oaxaca, Mexico","lat":17.0732,"lng":-96.7266,"gen":1},{"city":"Oaxaca, Mexico","lat":17.0732,"lng":-96.7266,"gen":1}]},
+  {"name":"Gagik Aghajanyan","city":"Pasadena, CA","lat":34.1478,"lng":-118.1445,"caretakers":[{"city":"Ejmiatsin, Armenia (probable)","lat":40.1672,"lng":43.8335,"gen":1},{"city":"Armavir (Hoktemberyan), Armenia (probable)","lat":40.1544,"lng":43.9997,"gen":1}]},
+  {"name":"Elena Dolores Tyvoll","city":"San Diego, CA","lat":32.7157,"lng":-117.1611,"caretakers":[{"city":"Oslo, Norway","lat":59.9139,"lng":10.7522,"gen":1},{"city":"Guanajuato, Mexico","lat":21.019,"lng":-101.2574,"gen":1}]},
+  {"name":"Hubert Hyunsang Cho","city":"Detroit, MI","lat":42.3314,"lng":-83.0458,"caretakers":[{"city":"Seoul, South Korea","lat":37.5665,"lng":126.978,"gen":1},{"city":"Seoul, South Korea","lat":37.5665,"lng":126.978,"gen":1}]},
+  {"name":"Eun-Ju Chang","city":"Los Angeles, CA","lat":34.0522,"lng":-118.2437,"caretakers":[{"city":"Korea","lat":35.9078,"lng":127.7669,"gen":1},{"city":"Korea","lat":35.9078,"lng":127.7669,"gen":1}]},
+  {"name":"Sharlena Nhung Nguyen","city":"San Diego, CA","lat":32.7157,"lng":-117.1611,"caretakers":[{"city":"Bac Lieu, Vietnam","lat":9.2941,"lng":105.7243,"gen":1},{"city":"Bac Lieu, Vietnam","lat":9.2941,"lng":105.7243,"gen":1}]},
+  {"name":"Cesar Sanchez","city":"Sacramento, CA","lat":38.5816,"lng":-121.4944,"caretakers":[{"city":"Mexico","lat":23.6345,"lng":-102.5528,"gen":1},{"city":"Mexico","lat":23.6345,"lng":-102.5528,"gen":1}]},
+  {"name":"Jenny Sun","city":"Beijing, China","lat":39.9042,"lng":116.4074,"caretakers":[{"city":"Shandong, China","lat":36.6683,"lng":117.0208,"gen":1},{"city":"Hebei, China","lat":38.0428,"lng":114.5149,"gen":1}]},
+  {"name":"Luke Hayden Hollingsworth","city":"San Jose, CA","lat":37.3382,"lng":-121.8863,"caretakers":[{"city":"Santa Clara, CA","lat":37.3541,"lng":-121.9552,"gen":1},{"city":"Santa Clara, CA","lat":37.3541,"lng":-121.9552,"gen":1}]},
+  {"name":"Madison Kurtz","city":"Plano, TX","lat":33.0198,"lng":-96.6989,"caretakers":[{"city":"Dayton, OH","lat":39.7589,"lng":-84.1916,"gen":1},{"city":"Taipei, Taiwan","lat":25.033,"lng":121.5654,"gen":1}]},
+  {"name":"Ethan Lee","city":"Los Angeles, CA","lat":34.0522,"lng":-118.2437,"caretakers":[{"city":"Korea","lat":35.9078,"lng":127.7669,"gen":1},{"city":"Korea","lat":35.9078,"lng":127.7669,"gen":1}]},
+  {"name":"Clark Huang Wang","city":"Toronto, ON, Canada","lat":43.6532,"lng":-79.3832,"caretakers":[{"city":"Shenyang, China","lat":41.8057,"lng":123.4315,"gen":1}]},
+  {"name":"Jonathan Tin-Jun Wu","city":"Toronto, Canada","lat":43.6532,"lng":-79.3832,"caretakers":[{"city":"Hong Kong","lat":22.3193,"lng":114.1694,"gen":1},{"city":"Hong Kong","lat":22.3193,"lng":114.1694,"gen":1}]},
+  {"name":"Jonathan Hieu Nguyen","city":"Sacramento, CA","lat":38.5816,"lng":-121.4944,"caretakers":[{"city":"Vietnam","lat":14.0583,"lng":108.2772,"gen":1},{"city":"Vietnam","lat":14.0583,"lng":108.2772,"gen":1}]},
+  {"name":"Amarachi Brittany Onwuzurike","city":"Detroit, MI","lat":42.3314,"lng":-83.0458,"caretakers":[{"city":"Imo State, Nigeria","lat":5.572,"lng":7.0588,"gen":1},{"city":"Aba, Nigeria","lat":5.1067,"lng":7.3667,"gen":1}]},
+  {"name":"Hunter Michael Pruett","city":"Los Angeles, CA","lat":34.0522,"lng":-118.2437,"caretakers":[{"city":"Glendale, CA","lat":34.1425,"lng":-118.2551,"gen":1},{"city":"Armenia","lat":40.1792,"lng":44.4991,"gen":1}]},
+  {"name":"Hetvi Patel","city":"Northridge, CA","lat":34.2257,"lng":-118.5368,"caretakers":[{"city":"Sajiyavadar, India","lat":21.5222,"lng":70.4579,"gen":1},{"city":"Ahmedabad, India","lat":23.0225,"lng":72.5714,"gen":1}]},
+  {"name":"Lydia-Rose Cannon","city":"Santa Clara, CA","lat":37.3541,"lng":-121.9552,"caretakers":[{"city":"San Francisco, CA","lat":37.7749,"lng":-122.4194,"gen":1},{"city":"Palo Alto, CA","lat":37.4419,"lng":-122.143,"gen":1}]},
+  {"name":"Sandra Yvette Sanchez de Tagle","city":"Sacramento, CA","lat":38.5816,"lng":-121.4944,"caretakers":[{"city":"Toluca, Mexico","lat":19.2826,"lng":-99.6557,"gen":1}]},
+  {"name":"Zara Wang","city":"San Jose, CA","lat":37.3382,"lng":-121.8863,"caretakers":[{"city":"Lusaka, Zambia","lat":-15.3875,"lng":28.3228,"gen":1},{"city":"Pittsburgh, PA","lat":40.4406,"lng":-79.9959,"gen":1}]},
+  {"name":"Sihan Cheng","city":"Shenyang, China","lat":41.8057,"lng":123.4315,"caretakers":[{"city":"Shenyang, China","lat":41.8057,"lng":123.4315,"gen":1},{"city":"Shenyang, China","lat":41.8057,"lng":123.4315,"gen":1}]},
+  {"name":"Naomi Susoev Lenchner","city":"San Francisco, CA","lat":37.7749,"lng":-122.4194,"caretakers":[{"city":"San Francisco, CA","lat":37.7749,"lng":-122.4194,"gen":1},{"city":"Queens, NY","lat":40.7282,"lng":-73.7949,"gen":1}]},
+  {"name":"Emilie Lo","city":"Fremont, CA","lat":37.5485,"lng":-121.9886,"caretakers":[{"city":"Taipei, Taiwan","lat":25.033,"lng":121.5654,"gen":1},{"city":"Chiayi, Taiwan","lat":23.48,"lng":120.4491,"gen":1}]},
+  {"name":"Alyssa Amanda Ruiz-Cortez","city":"Crescent City, CA","lat":41.7558,"lng":-124.2026,"caretakers":[{"city":"Manuel Doblado, Guanajuato, Mexico","lat":20.7281,"lng":-101.9494,"gen":1},{"city":"Manuel Doblado, Guanajuato, Mexico","lat":20.7281,"lng":-101.9494,"gen":1}]},
+  {"name":"Tara Priya Nath","city":"Laguna Hills, CA","lat":33.6017,"lng":-117.7073,"caretakers":[{"city":"Bihar, India","lat":25.0961,"lng":85.3131,"gen":1},{"city":"Bihar, India","lat":25.0961,"lng":85.3131,"gen":1}]},
+  {"name":"Edgar Lopez-Garcia","city":"Mountain View, CA","lat":37.3861,"lng":-122.0839,"caretakers":[{"city":"Guatemala","lat":15.7835,"lng":-90.2308,"gen":1},{"city":"Guatemala","lat":15.7835,"lng":-90.2308,"gen":1}]},
+  {"name":"Rodney Peter Padovani Casanova","city":"San Juan, Puerto Rico","lat":18.4655,"lng":-66.1057,"caretakers":[{"city":"San Juan, Puerto Rico","lat":18.4655,"lng":-66.1057,"gen":1},{"city":"Añasco, Puerto Rico","lat":18.2852,"lng":-67.1408,"gen":1}]},
+  {"name":"River Ma","city":"Hangzhou, China","lat":30.2741,"lng":120.1551,"caretakers":[{"city":"Beilun, Ningbo, China","lat":29.9411,"lng":121.839,"gen":1},{"city":"Huainan, Anhui, China","lat":32.6255,"lng":116.9996,"gen":1}]},
+  {"name":"Shaona Das","city":"Santa Clara, CA","lat":37.3541,"lng":-121.9552,"caretakers":[{"city":"India","lat":20.5937,"lng":78.9629,"gen":1},{"city":"India","lat":20.5937,"lng":78.9629,"gen":1}]},
+  {"name":"David Han","city":"Richmond, BC, Canada","lat":49.1666,"lng":-123.1336,"caretakers":[{"city":"Jiangxi, China","lat":27.0869,"lng":114.9042,"gen":1},{"city":"Tianjin, China","lat":39.3434,"lng":117.3616,"gen":1}]},
+  {"name":"Eliot Cummings","city":"","lat":null,"lng":null,"caretakers":[{"city":"Texas, USA","lat":31.9686,"lng":-99.9018,"gen":1},{"city":"Texas, USA","lat":31.9686,"lng":-99.9018,"gen":1}]},
+  {"name":"Diana Xa Nguyen","city":"Fremont, CA","lat":37.5485,"lng":-121.9886,"caretakers":[{"city":"Mien Trung, Vietnam","lat":16.4637,"lng":107.5909,"gen":1},{"city":"Saigon (Ho Chi Minh City), Vietnam","lat":10.8231,"lng":106.6297,"gen":1}]},
+  {"name":"Lizzy Yin","city":"Shanghai, China","lat":31.2304,"lng":121.4737,"caretakers":[{"city":"China","lat":35.8617,"lng":104.1954,"gen":1},{"city":"China","lat":35.8617,"lng":104.1954,"gen":1}]},
+  {"name":"Yenifer Reyes","city":"Guatemala","lat":15.7835,"lng":-90.2308,"caretakers":[{"city":"Guatemala","lat":15.7835,"lng":-90.2308,"gen":1},{"city":"Guatemala","lat":15.7835,"lng":-90.2308,"gen":1}]},
+  {"name":"Boyi Hu","city":"Chaoyang, Beijing, China","lat":39.9219,"lng":116.4431,"caretakers":[{"city":"Beijing, China","lat":39.9042,"lng":116.4074,"gen":1},{"city":"Jiangxi, China","lat":27.0869,"lng":114.9042,"gen":1}]},
+  {"name":"Alberto Diaz","city":"Los Angeles, CA","lat":34.0522,"lng":-118.2437,"caretakers":[{"city":"Oaxaca, Mexico","lat":17.0732,"lng":-96.7266,"gen":1},{"city":"Guatemala City, Guatemala","lat":14.6349,"lng":-90.5069,"gen":1}]},
+  {"name":"Anthony League","city":"Riverside, CA","lat":33.9806,"lng":-117.3755,"caretakers":[{"city":"Santa Ana, CA","lat":33.7455,"lng":-117.8677,"gen":1},{"city":"Santa Ana, CA","lat":33.7455,"lng":-117.8677,"gen":1}]},
+  {"name":"Sebastian Nicholas Hofmann","city":"Santa Clara, CA","lat":37.3541,"lng":-121.9552,"caretakers":[{"city":"Munich, Germany","lat":48.1351,"lng":11.582,"gen":1},{"city":"Taipei, Taiwan","lat":25.033,"lng":121.5654,"gen":1}]},
+  {"name":"Marié Abe","city":"Tokyo, Japan","lat":35.6762,"lng":139.6503,"caretakers":[{"city":"Tokyo, Japan","lat":35.6762,"lng":139.6503,"gen":1},{"city":"Tokyo, Japan","lat":35.6762,"lng":139.6503,"gen":1}]},
+  {"name":"Adriana Karina Charondo Redditt-Rodriguez","city":"San Jose, CA","lat":37.3382,"lng":-121.8863,"caretakers":[{"city":"Quelimane, Mozambique","lat":-17.8784,"lng":36.8881,"gen":1},{"city":"Honolulu, Oahu, Hawaii","lat":21.3069,"lng":-157.8583,"gen":1}]},
+  {"name":"Mitsuki Shizukuishi","city":"Sendai, Japan","lat":38.2682,"lng":140.8694,"caretakers":[{"city":"Sendai, Japan","lat":38.2682,"lng":140.8694,"gen":1},{"city":"Ishinomaki, Japan","lat":38.4333,"lng":141.3,"gen":1}]}
+];
+
+function getCountry(city) {
+  const c = city.toLowerCase();
+  if (/vietnam|viet|bac lieu|mien trung|saigon|ho chi minh/.test(c)) return 'Vietnam';
+  if (/china|beijing|shanghai|shandong|hebei|jiangxi|tianjin|shenyang|hangzhou|ningbo|huainan|chaoyang|beilun/.test(c)) return 'China';
+  if (/korea|seoul/.test(c)) return 'Korea';
+  if (/japan|tokyo|sendai|ishinomaki|osaka|kyoto/.test(c)) return 'Japan';
+  if (/taiwan|taipei|chiayi/.test(c)) return 'Taiwan';
+  if (/hong kong/.test(c)) return 'Hong Kong';
+  if (/india|bihar|ahmedabad|sajiyavadar/.test(c)) return 'India';
+  if (/mexico|oaxaca|guanajuato|toluca|manuel doblado/.test(c)) return 'Mexico';
+  if (/guatemala/.test(c)) return 'Guatemala';
+  if (/puerto rico|añasco/.test(c)) return 'Puerto Rico';
+  if (/nigeria|imo|aba/.test(c)) return 'Nigeria';
+  if (/zambia|lusaka/.test(c)) return 'Zambia';
+  if (/mozambique|maputo|quelimane/.test(c)) return 'Mozambique';
+  if (/armenia|ejmiatsin|armavir|hoktemberyan/.test(c)) return 'Armenia';
+  if (/norway|oslo/.test(c)) return 'Norway';
+  if (/germany|munich/.test(c)) return 'Germany';
+  if (/hawaii|honolulu|oahu/.test(c)) return 'Hawaii / USA';
+  return 'North America';
+}
+
+const COUNTRY_COLORS = {
+  'Vietnam':       '#e05c3a',
+  'China':         '#c9395e',
+  'Korea':         '#a855b5',
+  'Japan':         '#7c3aed',
+  'Taiwan':        '#4f6ddb',
+  'Hong Kong':     '#2563b8',
+  'India':         '#0891b2',
+  'Mexico':        '#059669',
+  'Guatemala':     '#65a30d',
+  'Puerto Rico':   '#ca8a04',
+  'Nigeria':       '#d97706',
+  'Zambia':        '#dc4f1a',
+  'Mozambique':    '#be185d',
+  'Armenia':       '#7e22ce',
+  'Norway':        '#1d6fb5',
+  'Germany':       '#374151',
+  'Hawaii / USA':  '#0d9488',
+  'North America': '#9ca3af',
+};
+
+const DIM_OPACITY    = 0.08;
+const ACTIVE_OPACITY = 0.85;
+const S_COLOR        = '#534AB7';
+const ROUND          = 3;
+
+function key(lat, lng) { return lat.toFixed(ROUND) + ',' + lng.toFixed(ROUND); }
+
+function initMap() {
+  const map = L.map('map', { zoomControl: true, scrollWheelZoom: true });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://carto.com/">CartoDB</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    subdomains: 'abcd', maxZoom: 19
+  }).addTo(map);
+
+  function makeDot(lat, lng, color, size, tipHtml, isStudent, rings) {
+    rings = rings || [];
     // deduplicate rings but keep up to 2
     const uniqueRings = [...new Set(rings)].slice(0, 2);
     // concentric ring divs, outermost first, radii 7px and 11px beyond dot edge

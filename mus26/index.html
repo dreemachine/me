@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Promised Land: Can You Feel It? — MUSIC 26AC Proposal</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- Fixed navigation (populated by main.js) -->
+  <nav id="site-nav" aria-label="Section navigation">
+    <div class="nav-inner">
+      <span class="nav-wordmark">The Promised Land</span>
+      <ul id="nav-links" class="nav-links" role="list"></ul>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- ── HERO ────────────────────────────────────────────── -->
+    <section id="hero" class="section section--hero" aria-label="Title">
+      <div class="hero-bg-grid" aria-hidden="true"></div>
+      <div class="hero-deco" aria-hidden="true">
+        <div class="deco-ring deco-ring--1"></div>
+        <div class="deco-ring deco-ring--2"></div>
+        <div class="deco-ring deco-ring--3"></div>
+      </div>
+      <div class="hero-content">
+        <p   class="eyebrow"     id="hero-eyebrow"></p>
+        <h1  class="hero-title"  id="hero-title"></h1>
+        <p   class="hero-subtitle" id="hero-subtitle"></p>
+        <p   class="hero-tagline"  id="hero-tagline"></p>
+        <dl  class="hero-details"  id="hero-details"></dl>
+        <p   class="scroll-cue"    id="scroll-cue" aria-hidden="true"></p>
+      </div>
+    </section>
+
+    <!-- ── QUOTE PANEL 1 (between Hero and Theme) ──────────── -->
+    <section class="quote-panel" data-quote-index="0" aria-label="Quote">
+      <div class="quote-panel-inner">
+        <blockquote class="qp-text"></blockquote>
+        <cite class="qp-attr"></cite>
+      </div>
+    </section>
+
+    <!-- ── THEME & GOALS ────────────────────────────────────── -->
+    <section id="theme" class="section section--theme" aria-label="Theme and Goals">
+      <div class="section-inner">
+        <div class="section-label" id="theme-label"></div>
+        <h2  class="section-heading"    id="theme-heading"></h2>
+        <p   class="section-subheading" id="theme-subheading"></p>
+        <div class="section-body"       id="theme-body"></div>
+        <div class="goals-block">
+          <h3 class="goals-heading" id="goals-heading"></h3>
+          <ol class="goals-list"    id="goals-list"></ol>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── AUDIENCE ─────────────────────────────────────────── -->
+    <section id="audience" class="section section--audience" aria-label="Audience">
+      <div class="section-inner">
+        <div class="section-label" id="audience-label"></div>
+        <h2  class="section-heading" id="audience-heading"></h2>
+        <div class="section-body"   id="audience-body"></div>
+        <blockquote class="pull-quote" id="audience-note"></blockquote>
+      </div>
+    </section>
+
+    <!-- ── VENUE ────────────────────────────────────────────── -->
+    <section id="venue" class="section section--venue" aria-label="Venue">
+      <div class="section-inner">
+        <div class="section-label" id="venue-label"></div>
+        <h2  class="section-heading" id="venue-heading"></h2>
+        <div class="venue-grid"      id="venue-grid"></div>
+      </div>
+    </section>
+
+    <!-- ── ARTISTS header ───────────────────────────────────── -->
+    <!-- Venue banners + artist groups are injected after this section by main.js -->
+    <section id="artists" class="section section--artists" aria-label="Artists">
+      <div class="section-inner">
+        <div class="section-label" id="artists-label"></div>
+        <h2  class="section-heading" id="artists-heading"></h2>
+        <p   class="section-intro"   id="artists-intro"></p>
+      </div>
+    </section>
+
+    <!-- ── QUOTE PANEL 2 (between Artists and Event Design) ─── -->
+    <section class="quote-panel" data-quote-index="1" aria-label="Quote">
+      <div class="quote-panel-inner">
+        <blockquote class="qp-text"></blockquote>
+        <cite class="qp-attr"></cite>
+      </div>
+    </section>
+
+    <!-- ── EVENT DESIGN ─────────────────────────────────────── -->
+    <section id="event-design" class="section section--event" aria-label="Event Design">
+      <div class="section-inner">
+        <div class="section-label" id="event-label"></div>
+        <h2  class="section-heading" id="event-heading"></h2>
+        <div class="section-body"    id="event-body"></div>
+        <div class="elements-grid"   id="elements-grid"></div>
+      </div>
+    </section>
+
+    <!-- ── CHALLENGES ───────────────────────────────────────── -->
+    <section id="challenges" class="section section--challenges" aria-label="Challenges">
+      <div class="section-inner">
+        <div class="section-label" id="challenges-label"></div>
+        <h2  class="section-heading" id="challenges-heading"></h2>
+        <p   class="section-intro"   id="challenges-intro"></p>
+        <div class="challenges-list" id="challenges-list"></div>
+      </div>
+    </section>
+
+    <!-- ── PUBLICITY ────────────────────────────────────────── -->
+    <section id="publicity" class="section section--publicity" aria-label="Publicity">
+      <div class="section-inner">
+        <div class="section-label" id="publicity-label"></div>
+        <h2  class="section-heading"  id="publicity-heading"></h2>
+        <div class="section-body"     id="publicity-body"></div>
+        <ul  class="principles-list"  id="principles-list"></ul>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p class="footer-course" id="footer-course"></p>
+      <p class="footer-uni"    id="footer-uni"></p>
+      <p class="footer-note"   id="footer-note"></p>
+    </div>
+  </footer>
+
+  <!-- Floating companion playlist player -->
+  <aside id="music-player" class="music-player" aria-label="Companion playlist" hidden>
+    <button class="mp-header" id="mp-header" aria-expanded="true" aria-controls="mp-body">
+      <span class="mp-label" id="mp-label">Companion Playlist</span>
+      <span class="mp-toggle-icon" aria-hidden="true">−</span>
+    </button>
+    <div class="mp-body" id="mp-body">
+      <div class="mp-track-info">
+        <div class="mp-track-title"  id="mp-title">—</div>
+        <div class="mp-track-artist" id="mp-artist"></div>
+      </div>
+      <div class="mp-controls">
+        <button class="mp-btn mp-btn--skip" id="mp-prev" aria-label="Previous track">&#8592;</button>
+        <button class="mp-btn mp-btn--play" id="mp-play" aria-label="Play">&#9654;</button>
+        <button class="mp-btn mp-btn--skip" id="mp-next" aria-label="Next track">&#8594;</button>
+      </div>
+      <p class="mp-counter" id="mp-counter"></p>
+      <!-- SoundCloud widget — hidden but functional -->
+      <div class="mp-sc-wrap">
+        <iframe id="sc-widget" class="sc-widget-iframe"
+          scrolling="no" frameborder="no" allow="autoplay"></iframe>
+      </div>
+      <!-- Track list built by JS -->
+      <div class="mp-tracklist" id="mp-tracklist"></div>
+    </div>
+  </aside>
+
+  <!-- Load order: content first, then GSAP, then app logic -->
+  <script src="content.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+  <script src="main.js"></script>
+  <!-- SoundCloud Widget API — loaded after main.js so initPlayer can reference it -->
+  <script src="https://w.soundcloud.com/player/api.js"></script>
+
+</body>
+</html>

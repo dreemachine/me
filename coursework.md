@@ -2,7 +2,7 @@
 layout: default
 title: Coursework
 ---
-## Selected Coursework | UC Berkeley
+## Selected Coursework | UC&nbsp;Berkeley
 
 ## Graduate Seminars  
 

@@ -4,7 +4,7 @@ title: Photography
 ---
 
 <p class="portfolio-nav" markdown="1">
-[SOMY](#heart) | [Berkeley The City](#berkeley) | [UC Berkeley](#ucberkeley)
+[SOMY](#heart) | [Berkeley The City](#berkeley)
 </p>
 
 ## Shade of My Heart {#heart}
@@ -40,13 +40,5 @@ title: Photography
   <figure>
     <img src="/assets/images/bannedbooksDSC5708.JPG" alt="Banned Books Pegasus">
     <figcaption>banned books at pegasus</figcaption>
-  </figure>
-</div>
-
-## UC Berkeley {#ucberkeley}
-<div class="image-grid">
-  <figure>
-    <img src="/assets/images/event1.jpg" alt="Event 1">
-    <figcaption>campus event</figcaption>
   </figure>
 </div>

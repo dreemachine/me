@@ -1,8 +1,8 @@
 <nav>
-  <a href="/">Home</a> |
-  <a href="/writing.html">Writing</a> |
-  <a href="/portfolio.html">Photography</a> |
-  <a href="/coursework.html">Coursework</a> |
-  <a href="/projects.html">Projects</a>
+  <a href="/"{% if page.url == '/' %} class="active"{% endif %}>Home</a>
+  <a href="/writing.html"{% if page.url == '/writing.html' %} class="active"{% endif %}>Writing</a>
+  <a href="/portfolio.html"{% if page.url == '/portfolio.html' %} class="active"{% endif %}>Photography</a>
+  <span class="nav-break" aria-hidden="true"></span>
+  <a href="/coursework.html"{% if page.url == '/coursework.html' %} class="active"{% endif %}>Coursework</a>
+  <a href="/projects.html"{% if page.url == '/projects.html' %} class="active"{% endif %}>Projects</a>
 </nav>
-<hr>

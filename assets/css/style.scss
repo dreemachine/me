@@ -2,34 +2,136 @@
 ---
 @import "{{ site.theme }}";
 
-/* Even distribution for portfolio category links */
-.portfolio-nav {
-  display: flex;
-  justify-content: space-between;
-  max-width: 600px;
-  margin: 0 auto 30px;
+:root {
+  --bg: #faf9f7;
+  --text: #24211d;
+  --text-muted: #7a756c;
+  --border: #e4ded3;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --sidebar-width: 220px;
+  --content-max-width: 680px;
 }
 
-.portfolio-nav a {
-  flex: 1;
-  text-align: center;
+* {
+  box-sizing: border-box;
 }
 
-/* Fix layout to prevent overlap */
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  line-height: 1.65;
+}
+
+a {
+  color: var(--text);
+  text-decoration-color: var(--border);
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-color: var(--text);
+}
+
+/* Layout */
 .wrapper {
-  width: 90%;
-  max-width: 1200px;
+  display: flex;
+  align-items: flex-start;
+  gap: 56px;
+  width: 92%;
+  max-width: 1040px;
+  margin: 0 auto;
 }
 
 header {
-  width: 250px;
-  float: left;
-  position: fixed;
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  position: sticky;
+  top: 56px;
+  padding-top: 56px;
+}
+
+header h1 {
+  font-family: var(--font-serif);
+  font-size: 1.9rem;
+  margin: 0 0 4px;
+}
+
+header h1 a {
+  text-decoration: none;
+}
+
+header > p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-style: italic;
+  margin: 0 0 28px;
 }
 
 section {
-  width: calc(100% - 300px);
-  float: right;
+  flex: 1;
+  min-width: 0;
+  max-width: var(--content-max-width);
+  padding: 56px 0 80px;
+}
+
+/* Navigation */
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+nav a {
+  width: fit-content;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  padding-bottom: 2px;
+}
+
+nav a:hover,
+nav a.active {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+.nav-break {
+  display: none;
+}
+
+/* Even distribution for portfolio category links */
+.portfolio-nav {
+  display: flex;
+  gap: 24px;
+  margin: 0 0 36px;
+  font-size: 0.85rem;
+}
+
+.portfolio-nav a {
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+}
+
+.portfolio-nav a:hover {
+  color: var(--text);
+  border-bottom-color: var(--text);
+}
+
+h2 {
+  font-family: var(--font-serif);
+  font-size: 1.35rem;
+  margin-top: 48px;
+  margin-bottom: 16px;
+}
+
+h2:first-of-type {
+  margin-top: 0;
 }
 
 img {
@@ -39,10 +141,10 @@ img {
 }
 
 figcaption {
-  font-size: 0.85em;
-  color: #666;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
   margin-top: 0;
-  font-weight: bold;
 }
 
 .image-grid {
@@ -63,13 +165,58 @@ figcaption {
   display: block;
 }
 
-h2 {
-  margin-top: 60px;
-  clear: both;
+.project-screenshots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0 0;
 }
 
-body {
-  background-color: #f5f5f5;
+.project-screenshots img {
+  width: 140px;
+  height: auto;
+  margin-bottom: 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  cursor: zoom-in;
+  transition: opacity 0.15s;
+}
+
+.project-screenshots img:hover {
+  opacity: 0.8;
+}
+
+.lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(20, 18, 15, 0.92);
+  z-index: 100;
+}
+
+.lightbox:target {
+  display: flex;
+}
+
+.lightbox img {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  margin-bottom: 0;
+  border-radius: 4px;
+  cursor: zoom-out;
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 24px;
+  right: 32px;
+  color: #f5f5f5;
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .saudade-hint {
@@ -157,17 +304,32 @@ body {
 
 /* Mobile responsive */
 @media (max-width: 768px) {
+  .wrapper {
+    flex-direction: column;
+    width: 90%;
+    gap: 0;
+  }
   header {
     width: 100%;
     position: relative;
-    float: none;
+    top: 0;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+  }
+  nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .nav-break {
+    display: block;
+    flex-basis: 100%;
+    height: 0;
   }
   section {
-    width: 100%;
-    float: none;
-  }
-  .wrapper {
-    width: 95%;
+    max-width: 100%;
+    padding: 32px 0 60px;
   }
   .image-grid {
     column-count: 1;
